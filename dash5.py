@@ -810,7 +810,7 @@ HTML_TEMPLATE = r"""<!doctype html>
        tour without colliding with the timeline above. */
     #tour-controls {
       top:auto;
-      bottom:calc(48vh + 14px);   /* sits 14px above detail sheet (48vh in tour mode) */
+      bottom:calc(40vh + 14px);   /* sits 14px above detail sheet (40vh in tour mode) */
       transform:translateX(-50%);
       padding:8px 6px;
     }
@@ -871,10 +871,11 @@ HTML_TEMPLATE = r"""<!doctype html>
       padding:10px; border-radius:4px; font-size:13px; font-weight:600;
     }
 
-    /* Side panel becomes a slide-up drawer — fully hidden by default */
+    /* Side panel becomes a slide-up drawer — fully hidden by default,
+       capped at 50vh so the map always gets at least half the screen */
     #side {
       position:fixed; top:auto; left:0; right:0; bottom:0; width:100%;
-      max-height:70vh; height:70vh;
+      max-height:50vh; height:50vh;
       z-index:1060;
       transform:translateY(100%);
       transition:transform 0.3s ease;
@@ -895,11 +896,12 @@ HTML_TEMPLATE = r"""<!doctype html>
     #side.open::before { content:'━━━ タップで閉じる'; }
     #toc a { display:inline-block; margin:2px 6px 2px 0; }
 
-    /* Detail panel: bottom sheet — default 65vh, tour mode 48vh */
+    /* Detail panel: bottom sheet — capped at <half screen on mobile.
+       Default 48vh, tour mode 40vh. Map always gets ≥52vh / 60vh. */
     #detail {
       position:fixed; top:auto; left:0; right:0; bottom:0;
       width:100%; max-width:none;
-      height:65vh; max-height:65vh;
+      height:48vh; max-height:48vh;
       border-left:none; border-top:2px solid var(--accent);
       border-radius:14px 14px 0 0;
       padding:8px 16px 18px;
@@ -908,8 +910,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       box-shadow:0 -6px 20px rgba(0,0,0,0.5);
     }
     #detail.open { transform:translateY(0); }
-    /* When a tour is active, shrink detail to leave more map visible */
-    body.tour-active #detail { height:48vh; max-height:48vh; }
+    /* When a tour is active, shrink further so map gets 60vh */
+    body.tour-active #detail { height:40vh; max-height:40vh; }
     /* Drag handle at top */
     #detail::before {
       content:''; display:block;
@@ -1534,13 +1536,13 @@ function openDetail(slug) {
   if (s.lat && s.lon) {
     const isMobile = window.matchMedia('(max-width: 720px)').matches;
     if (isMobile) {
-      // Detail covers bottom of viewport: 65vh normal, 48vh during tour.
-      // Shift map so marker centers in the visible map band.
+      // Detail covers bottom of viewport: 48vh normal, 40vh during tour.
+      // (Capped at <half so the map always wins.) Shift map so the marker
+      // centers in the visible map band.
       const tourMode = document.body.classList.contains('tour-active');
-      const detailVh = tourMode ? 0.48 : 0.65;
+      const detailVh = tourMode ? 0.40 : 0.48;
       const visibleMapVh = 1 - detailVh;
       const markerCenterVh = visibleMapVh / 2;  // center marker in visible map band
-      // shift = (0.5 - markerCenterVh) * viewport_height in screen pixels
       const targetZoom = Math.max(map.getZoom(), tourMode ? 15 : 16);
       const targetPoint = map.project([s.lat, s.lon], targetZoom);
       const vh = window.innerHeight;
