@@ -44,6 +44,8 @@ PHASES = [
     ('phase27_drug_tokuryu.py','薬物 + トクリュウ重点深掘り(ヒロポン戦後史・密輸ルート・ルフィ事件公判・SNSリクルーター・暗号資産マネロン・コンパウンド被害者保護)'),
     ('phase28_tokuryu_neighborhoods.py','トクリュウ・半グレ拠点に周辺情報補填(narration + life_snippet, 現地の空気感)'),
     ('phase29_specific_addresses.py','具体的住所・建物名・店舗名を notes に補強(被害者名は伏せたまま)'),
+    ('phase30_persons_testimony_pros.py','人物・証言・訴訟を大幅拡充(persons 16→35, testimony 8→27, prosecutions 4→23)'),
+    ('phase31_chronicle_orgs.py','chronicle 16→51, org_tree 16→43 に拡充'),
     ('dash5.py',               'render index.html'),
 ]
 
