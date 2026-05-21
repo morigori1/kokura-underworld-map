@@ -722,32 +722,59 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   /* ===== Mobile ===== */
   @media (max-width: 720px) {
-    /* Top bar: compact, hide secondary stats */
-    #topbar { height:42px; padding:0 10px; gap:8px; }
+    /* Top bar: ultra-compact, only title + key stats */
+    #topbar { height:40px; padding:0 10px; gap:6px; }
     #topbar .title { font-size:12px; }
     #topbar .sub { display:none; }
-    #topbar .stats { gap:8px; font-size:10px; }
-    #topbar .stats span:nth-of-type(n+4) { display:none; }
+    #topbar .stats { gap:6px; font-size:10px; }
+    #topbar .stats span:nth-of-type(n+3) { display:none; }
+    #topbar .stats small { display:none; }
 
-    /* Mode bar + source ribbon: shorter */
-    #modebar { top:42px; height:30px; padding:0 8px; gap:8px; font-size:11px; }
-    #modebar .chip { padding:2px 7px; font-size:10px; }
-    #source-ribbon { top:72px; height:26px; padding:0 8px; }
-    #source-ribbon .sb { padding:1px 6px; font-size:10px; }
+    /* Mode bar + source ribbon: HIDDEN on mobile by default — surface via filter modal */
+    #modebar, #source-ribbon { display:none; }
+    #modebar.show-mobile, #source-ribbon.show-mobile {
+      display:flex !important;
+      position:relative; top:auto;
+    }
 
-    /* Side panel becomes a slide-up drawer */
+    /* Filter modal — opened by 🔍 button */
+    #filter-modal {
+      position:fixed; top:40px; left:0; right:0; bottom:auto;
+      max-height:60vh; overflow-y:auto;
+      background:var(--panel); border-bottom:2px solid var(--accent);
+      box-shadow:0 6px 20px rgba(0,0,0,0.5);
+      padding:14px 16px; z-index:1100;
+      transform:translateY(-110%); transition:transform 0.3s ease;
+    }
+    #filter-modal.show { transform:translateY(0); }
+    #filter-modal h3 { font-size:11px; color:var(--accent2); margin:0 0 6px; letter-spacing:0.08em; }
+    #filter-modal .group { margin-bottom:14px; }
+    #filter-modal .chips { display:flex; flex-wrap:wrap; gap:6px; }
+    #filter-modal .chip {
+      display:inline-block; padding:4px 10px; border-radius:14px;
+      border:1px solid var(--line); cursor:pointer; user-select:none;
+      background:rgba(255,255,255,0.03); font-size:11px;
+    }
+    #filter-modal .chip.active { background:var(--accent); color:#fff; }
+    #filter-modal .close-modal {
+      display:block; width:100%; margin-top:8px;
+      background:var(--accent); color:#fff; border:none;
+      padding:10px; border-radius:4px; font-size:13px; font-weight:600;
+    }
+
+    /* Side panel becomes a slide-up drawer — fully hidden by default */
     #side {
       position:fixed; top:auto; left:0; right:0; bottom:0; width:100%;
-      max-height:65vh; height:65vh;
+      max-height:70vh; height:70vh;
       z-index:1060;
-      transform:translateY(calc(100% - 44px));
+      transform:translateY(100%);
       transition:transform 0.3s ease;
       border-right:none; border-top:2px solid var(--accent);
       border-radius:14px 14px 0 0;
-      padding:6px 12px 14px;
+      padding:14px 14px 16px;
       box-shadow:0 -6px 20px rgba(0,0,0,0.5);
     }
-    /* When side is open, hide the tiny tab text and show the actual content */
+    #side::before { display:none; }  /* no peek tab; opened via toolbar */
     #detail { z-index:1100; }
     #side.open { transform:translateY(0); }
     #side::before {
@@ -795,26 +822,52 @@ HTML_TEMPLATE = r"""<!doctype html>
     #detail h3 { margin:14px 0 6px; }
     #detail .narr p { font-size:12.5px; line-height:1.65; }
 
-    /* Timeline: full width, smaller cards */
-    #timeline { left:0; height:120px; }
-    #timeline-scroll { height:100px; padding:8px 10px; }
-    .evt { width:200px; padding:6px 8px; }
+    /* Timeline: compact 56px by default — date+title only. Tap expands. */
+    #timeline { left:0; height:56px; transition:height 0.25s ease; }
+    #timeline.expanded { height:140px; }
+    #timeline-scroll { height:36px; padding:4px 8px; transition:height 0.25s ease; }
+    #timeline.expanded #timeline-scroll { height:120px; padding:8px 10px; }
+    .evt { width:160px; padding:4px 8px; font-size:11px; }
+    #timeline.expanded .evt { width:200px; padding:6px 8px; font-size:12px; }
+    .evt .sm { display:none; }
+    #timeline.expanded .evt .sm { display:-webkit-box; }
+    .evt .badges { display:none; }
+    #timeline.expanded .evt .badges { display:block; }
     #era-ribbon { height:18px; font-size:9px; }
+    #timeline-expand-tab {
+      position:absolute; top:-22px; right:10px;
+      background:var(--accent); color:#fff;
+      padding:3px 12px; border-radius:6px 6px 0 0;
+      font-size:11px; font-weight:600; cursor:pointer;
+    }
 
     /* Legend hidden on mobile */
     #legend { display:none; }
 
-    /* Right-side floating controls stack — clearly separated from timeline */
+    /* Right-side floating controls stack — minimal on mobile */
     #layers {
-      top:auto; bottom:178px; right:8px;
+      top:auto; bottom:72px; right:8px;
       padding:6px 10px; font-size:11px;
       background:var(--panel); border:1px solid var(--line);
     }
     #layers label { margin:2px 0; }
     #help-btn {
-      top:auto; bottom:138px; right:8px;
-      width:38px; height:38px; font-size:16px;
+      top:auto; bottom:148px; right:8px;
+      width:36px; height:36px; font-size:14px;
     }
+    /* Mobile FAB stack — left side: filter / menu */
+    #mobile-fab-stack {
+      position:fixed; left:8px; bottom:72px; z-index:1110;
+      display:flex; flex-direction:column; gap:8px;
+    }
+    #mobile-fab-stack button {
+      width:42px; height:42px; border-radius:50%;
+      border:none; font-size:18px; font-weight:700; cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);
+      display:flex; align-items:center; justify-content:center;
+    }
+    #fab-filter { background:var(--accent2); color:#000; }
+    #fab-menu { background:var(--accent3); color:#fff; }
 
     /* Splash: smaller, single-column */
     #splash { padding:14px; overflow-y:auto; align-items:flex-start; padding-top:30px; }
@@ -834,8 +887,11 @@ HTML_TEMPLATE = r"""<!doctype html>
     .stat-card svg { width:100% !important; height:auto; }
 
   }
-  /* The mobile-toggle button is replaced by the side-panel peek tab on
-     mobile (the "目次 ━━━ タップで展開" header). Hide the explicit button. */
+  @media (min-width: 721px) {
+    #mobile-fab-stack { display:none !important; }
+    #filter-modal { display:none !important; }
+    #timeline-expand-tab { display:none !important; }
+  }
   #mobile-toggle { display:none !important; }
 </style>
 </head>
@@ -949,6 +1005,29 @@ HTML_TEMPLATE = r"""<!doctype html>
 <button id="help-btn" title="使い方ガイド">?</button>
 <button id="mobile-toggle" title="目次・系譜を開く">☰</button>
 
+<div id="mobile-fab-stack">
+  <button id="fab-filter" title="絞り込み・色分け">🔍</button>
+  <button id="fab-menu" title="目次・系譜・人物">☰</button>
+</div>
+
+<div id="filter-modal">
+  <h3>色分けモード</h3>
+  <div class="group">
+    <div class="chips" id="m-modes">
+      <span class="chip active" data-mode="kind">種別</span>
+      <span class="chip" data-mode="faction">派閥</span>
+      <span class="chip" data-mode="era">時代</span>
+    </div>
+  </div>
+  <h3>派閥フィルタ(複数選択)</h3>
+  <div class="group"><div class="chips" id="m-factions"></div></div>
+  <h3>出典フィルタ</h3>
+  <div class="group"><div class="chips" id="m-sources"></div></div>
+  <h3>時代フィルタ</h3>
+  <div class="group"><div class="chips" id="m-eras"></div></div>
+  <button class="close-modal" id="close-filter">適用して閉じる</button>
+</div>
+
 <div id="help-overlay">
   <div class="label" style="top:60px; left:50%; transform:translateX(-50%); max-width:80%; text-align:center;">
     ▲ 上部チップ: 色分けモード切替(種別/派閥/時代)+ 派閥フィルタ + 出典種別フィルタ
@@ -975,6 +1054,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 <div id="map"></div>
 
 <div id="timeline">
+  <div id="timeline-expand-tab">▲ 詳しく</div>
   <div id="era-ribbon"></div>
   <div id="timeline-scroll">
     <div class="empty" id="tl-empty" style="color:var(--ink-dim); font-size:12px; padding:30px 0; text-align:center; white-space:normal;">
@@ -1789,13 +1869,122 @@ document.querySelectorAll('#splash .way').forEach(el => {
 
 // ===== Mobile side panel toggle =====
 const sideEl = document.getElementById('side');
-const mobileToggleEl = document.getElementById('mobile-toggle');
-function toggleSide() { sideEl.classList.toggle('open'); }
-mobileToggleEl.onclick = toggleSide;
-// Tap the header bar inside #side to toggle on mobile
+function toggleSide() {
+  sideEl.classList.toggle('open');
+  if (sideEl.classList.contains('open')) detailEl.classList.remove('open');
+}
+document.getElementById('fab-menu')?.addEventListener('click', toggleSide);
 sideEl.addEventListener('click', (e) => {
-  if (e.target === sideEl) toggleSide(); // tap on the ::before zone
+  if (e.target === sideEl) toggleSide();
 });
+
+// ===== Mobile filter modal =====
+const filterModal = document.getElementById('filter-modal');
+const mModes = document.getElementById('m-modes');
+const mFactions = document.getElementById('m-factions');
+const mSources = document.getElementById('m-sources');
+const mEras = document.getElementById('m-eras');
+
+function openFilterModal() { filterModal.classList.add('show'); }
+function closeFilterModal() { filterModal.classList.remove('show'); }
+document.getElementById('fab-filter')?.addEventListener('click', openFilterModal);
+document.getElementById('close-filter')?.addEventListener('click', closeFilterModal);
+
+// Populate mobile filter chips, mirror desktop state
+mModes.querySelectorAll('.chip').forEach(c => {
+  c.onclick = () => {
+    setMode(c.dataset.mode);
+    mModes.querySelectorAll('.chip').forEach(x => x.classList.toggle('active', x === c));
+  };
+});
+FACTION_ORDER.forEach(f => {
+  const c = document.createElement('span');
+  c.className = 'chip';
+  c.style.borderColor = FACTION[f];
+  c.style.color = FACTION[f];
+  c.textContent = f;
+  c.onclick = () => {
+    if (factionFilter.has(f)) { factionFilter.delete(f); c.classList.remove('active'); }
+    else { factionFilter.add(f); c.classList.add('active'); }
+    refreshMarkers();
+    applyAllFilters();
+    // also sync desktop chips
+    document.querySelectorAll('#faction-chips .chip').forEach(dc => {
+      if (dc.textContent === f) dc.classList.toggle('active', factionFilter.has(f));
+    });
+  };
+  mFactions.appendChild(c);
+});
+const orderedKindsForMobile = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+orderedKindsForMobile.forEach(sk => {
+  const def = SRC_BADGE[sk]; if (!def) return;
+  const [emoji, label, color] = def;
+  const c = document.createElement('span');
+  c.className = 'chip'; c.style.borderColor = color; c.style.color = color;
+  c.innerHTML = `${emoji} ${label}`;
+  c.onclick = () => {
+    if (sourceFilter.has(sk)) { sourceFilter.delete(sk); c.classList.remove('active'); }
+    else { sourceFilter.add(sk); c.classList.add('active'); }
+    applyAllFilters();
+  };
+  mSources.appendChild(c);
+});
+ERA_ORDER.forEach(era => {
+  const c = document.createElement('span');
+  c.className = 'chip'; c.style.borderColor = ERA[era]; c.style.color = ERA[era];
+  c.textContent = era;
+  let locked = false;
+  c.onclick = () => {
+    locked = !locked;
+    mEras.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+    if (locked) {
+      c.classList.add('active');
+      // sync the desktop era ribbon
+      eraRibbonEl.querySelectorAll('.era-cell').forEach(x => {
+        x.classList.toggle('dim', x.dataset.era !== era);
+        x.classList.toggle('locked', x.dataset.era === era);
+      });
+    } else {
+      eraRibbonEl.querySelectorAll('.era-cell').forEach(x => {
+        x.classList.remove('dim'); x.classList.remove('locked');
+      });
+    }
+    applyAllFilters();
+  };
+  mEras.appendChild(c);
+});
+
+// ===== Timeline expand on mobile =====
+const timelineEl = document.getElementById('timeline');
+document.getElementById('timeline-expand-tab')?.addEventListener('click', () => {
+  timelineEl.classList.toggle('expanded');
+  const tab = document.getElementById('timeline-expand-tab');
+  tab.textContent = timelineEl.classList.contains('expanded') ? '▼ 閉じる' : '▲ 詳しく';
+});
+
+// ===== Marker thinning at low zoom (mobile) =====
+// At zoom < 14 (wide view), show only HQ + major attack sites, not all 89 markers
+const MAJOR_KINDS = new Set(['hq_former', 'hq_current', 'attack_site', 'landmark']);
+function applyZoomThinning() {
+  if (!window.matchMedia('(max-width: 720px)').matches) return;
+  const z = map.getZoom();
+  const showAll = z >= 14;
+  for (const slug in siteIndex) {
+    const rec = siteIndex[slug];
+    const isMajor = MAJOR_KINDS.has(rec.site.kind);
+    const inFilter = factionFilter.size === 0 ||
+                     (rec.site.faction_tag && factionFilter.has(rec.site.faction_tag));
+    if (!inFilter) {
+      if (map.hasLayer(rec.marker)) map.removeLayer(rec.marker);
+      continue;
+    }
+    const shouldShow = showAll || isMajor;
+    if (shouldShow && !map.hasLayer(rec.marker)) map.addLayer(rec.marker);
+    else if (!shouldShow && map.hasLayer(rec.marker)) map.removeLayer(rec.marker);
+  }
+}
+map.on('zoomend moveend', applyZoomThinning);
+applyZoomThinning();
 
 const banner = document.getElementById('tour-banner');
 function showBanner(text, dwell = 2500) {
