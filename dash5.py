@@ -26,9 +26,14 @@ FACTION_PALETTE = {
     '田中組系':     '#f39c12',
     '山口組系':     '#8e44ad',
     '道仁会系':     '#9b59b6',
+    '福博会系':     '#7d3c98',
+    '半グレ':       '#ff6b35',
+    'トクリュウ':   '#ff1744',
+    '中国系':       '#ffb300',
     '県警側':       '#2980b9',
     '司法側':       '#16a085',
     '市民側':       '#27ae60',
+    '著作者':       '#95a5a6',
 }
 ERA_PALETTE = {
     '戦後闇市':     '#7f8c8d',
@@ -62,7 +67,9 @@ KIND_PALETTE = {
 }
 ERA_ORDER = ['戦後闇市', '高度成長', '平成抗争', '頂上作戦', '解体後']
 FACTION_ORDER = ['工藤會', '草野一家系', '工藤組系', '田中組系',
-                 '山口組系', '道仁会系', '県警側', '司法側', '市民側']
+                 '山口組系', '道仁会系', '福博会系',
+                 '半グレ', 'トクリュウ', '中国系',
+                 '県警側', '司法側', '市民側', '著作者']
 
 # Source-kind badges — emoji + short label + tint color. The variety here is
 # the point: a glance at a card tells you whether it's grounded in court

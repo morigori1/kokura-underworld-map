@@ -33,6 +33,11 @@ PHASES = [
     ('phase16_crime_stats.py', 'crime stat time series (NPA white papers)'),
     ('phase17_neighborhood.py','neighborhood-level micro events + lore (town/street-level)'),
     ('phase18_thicker.py',     'prewar history + food + family + media + national/international comparison + finance'),
+    ('phase19_kurume.py',      'Kurume / Dojinkai / Namikawakai — 九州抗争 detail'),
+    ('phase20_kobe.py',        'Kobe / Yamaguchi-gumi — 1915-2024 (山一抗争, 神戸山口組分裂, 絆會)'),
+    ('phase21_tokyo.py',       'Tokyo / Sumiyoshi-kai / Inagawa-kai + regulatory hubs (Diet, NPA, FSA)'),
+    ('phase22_hiroshima.py',   'Hiroshima / Kyoseikai (広島抗争・仁義なき戦い・孤狼の血)'),
+    ('phase23_hangure.py',     'Hangure / Tokuryu — 半グレ・準暴力団・トクリュウ(関東連合・ルフィ事件・連続強盗・闇バイト)'),
     ('dash5.py',               'render index.html'),
 ]
 
