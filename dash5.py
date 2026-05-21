@@ -1320,6 +1320,48 @@ HTML_TEMPLATE = r"""<!doctype html>
 
 <script>
 const DATA = __PAYLOAD__;
+
+// ===== Timeline state — defined FIRST so it works even if later JS errors =====
+// (User-reported: ribbon button was unresponsive when an error elsewhere broke
+// the script before this point.)
+(function() {
+  const TL_STATES = ['hidden', 'cards', 'exp', 'min'];
+  const TL_ICONS = { hidden: '▼', cards: '▼', exp: '▲', min: '▲' };
+  const KEY = 'kokura_timeline_state_v2';
+  const isMobile = window.matchMedia('(max-width: 720px)').matches;
+  const saved = localStorage.getItem(KEY);
+  let idx = (saved && TL_STATES.includes(saved))
+    ? TL_STATES.indexOf(saved)
+    : (isMobile ? 0 /* hidden */ : 1 /* cards */);
+  function apply() {
+    const state = TL_STATES[idx];
+    document.body.classList.remove('timeline-cards','timeline-exp','timeline-min','timeline-hidden');
+    document.body.classList.add('timeline-' + state);
+    const tab = document.getElementById('timeline-expand-tab');
+    if (tab) tab.textContent = TL_ICONS[state];
+    try { localStorage.setItem(KEY, state); } catch (e) {}
+  }
+  window.cycleTimelineState = function() {
+    idx = (idx + 1) % TL_STATES.length;
+    apply();
+  };
+  // Initial application — run when body is ready
+  if (document.body) apply();
+  else document.addEventListener('DOMContentLoaded', apply);
+  // Backup listener (in case inline onclick is somehow blocked)
+  document.addEventListener('DOMContentLoaded', function() {
+    const tab = document.getElementById('timeline-expand-tab');
+    if (tab && !tab.dataset.wired) {
+      tab.dataset.wired = '1';
+      tab.addEventListener('click', window.cycleTimelineState);
+      tab.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        window.cycleTimelineState();
+      }, { passive: false });
+    }
+  });
+})();
+
 const FACTION = DATA.palettes.faction;
 const ERA = DATA.palettes.era;
 const KIND = DATA.palettes.kind;
