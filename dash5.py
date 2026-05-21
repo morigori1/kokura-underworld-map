@@ -708,6 +708,61 @@ HTML_TEMPLATE = r"""<!doctype html>
   #legend .sw { width:10px; height:10px; border-radius:50%; margin-right:6px; border:1px solid rgba(0,0,0,0.4); }
   #legend .title { font-weight:700; color:var(--accent2); margin-bottom:4px; }
 
+  /* ===== Tour selection modal ===== */
+  #tour-menu {
+    position:fixed; inset:0; background:rgba(8,9,11,0.95);
+    z-index:1850; display:none;
+    overflow-y:auto; padding:20px;
+  }
+  #tour-menu.show { display:block; }
+  #tour-menu .wrap { max-width:760px; margin:0 auto; }
+  #tour-menu h2 {
+    color:var(--accent2); font-size:22px; letter-spacing:0.06em;
+    margin:8px 0 6px; text-align:center;
+  }
+  #tour-menu .sub {
+    color:var(--ink-dim); font-size:12px; text-align:center;
+    margin-bottom:18px; line-height:1.6;
+  }
+  #tour-menu .category {
+    border:1px solid var(--line); border-radius:8px; padding:14px;
+    margin-bottom:14px; background:rgba(255,255,255,0.02);
+  }
+  #tour-menu .cat-head {
+    color:#fff; font-weight:700; font-size:14px;
+    margin-bottom:10px; padding-bottom:6px;
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:8px;
+  }
+  #tour-menu .cat-color {
+    width:10px; height:10px; border-radius:50%;
+  }
+  #tour-menu .tours {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+    gap:8px;
+  }
+  #tour-menu .tour-card {
+    background:rgba(255,255,255,0.04); border:1px solid var(--line);
+    border-radius:6px; padding:10px 12px; cursor:pointer;
+    transition:border-color 0.18s, background 0.18s;
+  }
+  #tour-menu .tour-card:hover { border-color:var(--accent); background:rgba(217,83,79,0.08); }
+  #tour-menu .tour-card .ttl {
+    font-weight:700; font-size:13px; color:var(--ink); margin-bottom:3px;
+  }
+  #tour-menu .tour-card .desc {
+    font-size:11px; color:var(--ink-dim); line-height:1.5;
+  }
+  #tour-menu .tour-card .stops {
+    margin-top:6px; font-size:10px; color:var(--accent2);
+  }
+  #tour-menu .close-menu {
+    position:absolute; top:14px; right:18px;
+    width:36px; height:36px; border-radius:50%;
+    background:var(--accent); color:#fff; border:none;
+    font-size:18px; cursor:pointer;
+  }
+
   /* ===== Tour overlay ===== */
   #tour-banner {
     position:absolute; top:120px; left:50%; transform:translateX(-50%); z-index:1080;
@@ -720,15 +775,15 @@ HTML_TEMPLATE = r"""<!doctype html>
   #tour-banner.show { display:block; animation: fadein 0.6s; }
   @keyframes fadein { from { opacity:0; transform:translate(-50%, 10px); } to { opacity:1; transform:translate(-50%, 0); } }
 
-  /* ===== Tour playback controls ===== */
+  /* ===== Tour playback controls — always above detail/side panels ===== */
   #tour-controls {
     position:fixed; left:50%; transform:translateX(-50%);
     top:130px;
-    background:rgba(13,15,18,0.94); border:1px solid var(--accent2);
+    background:rgba(13,15,18,0.96); border:1px solid var(--accent2);
     border-radius:30px; padding:6px 8px;
-    z-index:1200;
+    z-index:1300;
     display:none;
-    box-shadow:0 4px 14px rgba(0,0,0,0.6);
+    box-shadow:0 4px 14px rgba(0,0,0,0.7);
   }
   #tour-controls.show { display:flex; align-items:center; gap:4px; }
   #tour-controls button {
@@ -750,8 +805,19 @@ HTML_TEMPLATE = r"""<!doctype html>
     padding:0 8px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   @media (max-width: 720px) {
-    #tour-controls { top:auto; bottom:130px; transform:translateX(-50%); }
+    /* Pin at top so detail panel (bottom 50vh in tour mode) never covers it */
+    #tour-controls {
+      top:auto; bottom:auto;
+      top: calc(env(safe-area-inset-top, 0px) + 78px);  /* below topbar+modebar */
+      transform:translateX(-50%);
+      padding:8px 6px;
+    }
+    #tour-controls button {
+      width:42px; height:42px; font-size:16px;
+    }
+    #tour-controls .play-pause { font-size:18px; }
     #tour-controls .label { display:none; }
+    #tour-controls .pos { font-size:12px; padding:0 6px; }
   }
 
   @media (max-width: 900px) {
@@ -827,7 +893,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     #side.open::before { content:'━━━ タップで閉じる'; }
     #toc a { display:inline-block; margin:2px 6px 2px 0; }
 
-    /* Detail panel: bottom sheet (65vh) — map stays visible at top */
+    /* Detail panel: bottom sheet — default 65vh, tour mode 48vh */
     #detail {
       position:fixed; top:auto; left:0; right:0; bottom:0;
       width:100%; max-width:none;
@@ -836,10 +902,12 @@ HTML_TEMPLATE = r"""<!doctype html>
       border-radius:14px 14px 0 0;
       padding:8px 16px 18px;
       transform:translateY(100%);
-      transition:transform 0.32s ease;
+      transition:transform 0.32s ease, height 0.32s ease;
       box-shadow:0 -6px 20px rgba(0,0,0,0.5);
     }
     #detail.open { transform:translateY(0); }
+    /* When a tour is active, shrink detail to leave more map visible */
+    body.tour-active #detail { height:48vh; max-height:48vh; }
     /* Drag handle at top */
     #detail::before {
       content:''; display:block;
@@ -976,10 +1044,15 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="ttl">市民襲撃4事件</div>
       <div class="desc">1998漁協・2012元警官・2013看護師・2014歯科医師 — 頂上作戦の起訴対象。</div>
     </div>
+    <div class="way" data-way="tour-menu" style="border-color:#e74c3c;">
+      <div class="num" style="color:#e74c3c;">🎬 5</div>
+      <div class="ttl">ツアー選択メニュー</div>
+      <div class="desc">16 種のガイドツアーを系統別(工藤會・九州抗争・山口組・半グレ・全国比較・カルチャー)から選ぶ。</div>
+    </div>
     <div class="way" data-way="map-free">
-      <div class="num">▶ 5</div>
+      <div class="num">▶ 6</div>
       <div class="ttl">自由に地図を開く</div>
-      <div class="desc">89拠点ピンを自由探索。色分け切替・時代/派閥/出典フィルタで読み方を変える。</div>
+      <div class="desc">171 拠点ピンを自由探索。色分け切替・時代/派閥/出典フィルタで読み方を変える。</div>
     </div>
   </div>
 
@@ -1048,6 +1121,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 <button id="mobile-toggle" title="目次・系譜を開く">☰</button>
 
 <div id="mobile-fab-stack">
+  <button id="fab-tour" title="ツアー選択" style="background:#e74c3c; color:#fff;">🎬</button>
   <button id="fab-filter" title="絞り込み・色分け">🔍</button>
   <button id="fab-menu" title="目次・系譜・人物">☰</button>
 </div>
@@ -1091,6 +1165,18 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div>
 
 <div id="legend"></div>
+<div id="tour-menu">
+  <button class="close-menu" id="close-tour-menu">✕</button>
+  <div class="wrap">
+    <h2>🎬 ガイドツアーを選ぶ</h2>
+    <div class="sub">
+      組織系統別に整理した 16 種のツアー。各カード をタップで再生開始。<br>
+      再生中は ⏮ / ⏸ / ⏭ で前後・一時停止できます。
+    </div>
+    <div id="tour-categories"></div>
+  </div>
+</div>
+
 <div id="tour-banner"></div>
 
 <div id="tour-controls">
@@ -1397,17 +1483,18 @@ function openDetail(slug) {
   if (s.lat && s.lon) {
     const isMobile = window.matchMedia('(max-width: 720px)').matches;
     if (isMobile) {
-      // On mobile, detail covers bottom 65vh — shift map so marker is in
-      // the visible upper ~35vh band (i.e. center the marker about 1/5
-      // down from the top of the *full* viewport, not in the middle).
-      const targetZoom = Math.max(map.getZoom(), 16);
+      // Detail covers bottom of viewport: 65vh normal, 48vh during tour.
+      // Shift map so marker centers in the visible map band.
+      const tourMode = document.body.classList.contains('tour-active');
+      const detailVh = tourMode ? 0.48 : 0.65;
+      const visibleMapVh = 1 - detailVh;
+      const markerCenterVh = visibleMapVh / 2;  // center marker in visible map band
+      // shift = (0.5 - markerCenterVh) * viewport_height in screen pixels
+      const targetZoom = Math.max(map.getZoom(), tourMode ? 15 : 16);
       const targetPoint = map.project([s.lat, s.lon], targetZoom);
       const vh = window.innerHeight;
-      // Shift down: we want the marker to appear ~vh*0.17 from the top
-      // (centered in the visible 35vh top band). Default centers it at vh*0.5.
-      // So offset Y by (vh*0.5 - vh*0.17) = vh*0.33 pixels downward in
-      // screen-space, which moves the *view* by the same in projected coords.
-      const adjusted = L.point(targetPoint.x, targetPoint.y + vh * 0.33);
+      const shiftY = (0.5 - markerCenterVh) * vh;
+      const adjusted = L.point(targetPoint.x, targetPoint.y + shiftY);
       const newCenter = map.unproject(adjusted, targetZoom);
       map.setView(newCenter, targetZoom, { animate: true });
     } else {
@@ -1900,6 +1987,7 @@ document.querySelectorAll('#splash .way').forEach(el => {
     else if (way === 'tour-chron') runChronTour();
     else if (way === 'tour-gossip') { setMode('faction'); runGossipTour(); }
     else if (way === 'cases-4') runCases4Tour();
+    else if (way === 'tour-menu') setTimeout(openTourMenu, 200);
   };
 });
 
@@ -2054,6 +2142,7 @@ function tourHide() {
   tourClearTimer();
   tour.steps = []; tour.idx = 0; tour.paused = false;
   tourCtrls.classList.remove('show');
+  document.body.classList.remove('tour-active');
 }
 function updateTourUI() {
   if (tour.steps.length === 0) return;
@@ -2087,9 +2176,247 @@ function startTour(steps) {
   tour.steps = steps;
   tour.idx = 0;
   tour.paused = false;
+  document.body.classList.add('tour-active');
+  // close tour menu if open
+  document.getElementById('tour-menu')?.classList.remove('show');
   tourShow();
   tourGoTo(0);
 }
+
+// ===== Tour catalog (organized by 組織系統) =====
+const TOUR_CATEGORIES = [
+  {
+    name: '工藤會 / 北九州',
+    color: '#d9534f',
+    tours: [
+      { id: 'hq_focus', title: '本部跡から始める', desc: '神岳1丁目の「金看板」から解体まで',
+        steps: [
+          { slug: 'kudokai_hq_kandake', banner: '神岳1丁目 — 工藤會本部跡' },
+          { slug: 'kudokai_hq_kandake_signboard' },
+          { slug: 'ogura_keisatsu' },
+          { slug: 'fukuoka_kenkei' },
+          { slug: 'kokura_district_court' },
+        ]},
+      { id: 'chron_5acts', title: '系譜順 5幕(戦後→解体後)', desc: '1947 草野一家→2024 控訴審までを 5 章で',
+        steps: [
+          { slug: 'kusano_ikka_origin_kokura', banner: '第1幕 ─ 戦後闇市の小倉(1947–)' },
+          { slug: 'kudogumi_nakatsu_origin' },
+          { slug: 'uomachi_arcade' },
+          { slug: 'yawata_seitetsu_1901' },
+          { slug: 'yamaguchigumi_kyushu_entry', banner: '第2幕 ─ 神岳に本部が立つ(1980s)' },
+          { slug: 'kudokai_hq_kandake' },
+          { slug: 'heisei_shinten_chi', banner: '第3幕 ─ 市民への威迫(2000–2014)' },
+          { slug: 'attack_1998_ashiya_fisheries' },
+          { slug: 'attack_2012_ex_officer' },
+          { slug: 'attack_2013_nurse' },
+          { slug: 'attack_2014_dentist' },
+          { slug: 'fukuoka_kenkei', banner: '第4幕 ─ 頂上作戦と解体(2014–2021)' },
+          { slug: 'kudokai_hq_kandake_signboard' },
+          { slug: 'kokura_district_court' },
+          { slug: 'tanga_market', banner: '第5幕 ─ その後の街(2022–)' },
+        ]},
+      { id: 'cases4', title: '市民襲撃4事件', desc: '頂上作戦の起訴対象 4 事件',
+        steps: [
+          { slug: 'attack_1998_ashiya_fisheries', banner: '市民襲撃4事件 — 1998 元漁協理事射殺' },
+          { slug: 'attack_2012_ex_officer' },
+          { slug: 'attack_2013_nurse' },
+          { slug: 'attack_2014_dentist' },
+        ]},
+      { id: 'kudokai_legal', title: '頂上作戦と公判', desc: '2014 逮捕 → 2021 一審 → 2024 控訴審',
+        steps: [
+          { slug: 'fukuoka_kenkei', banner: '頂上作戦 — 県警組織犯罪対策課' },
+          { slug: 'kudokai_hq_kandake' },
+          { slug: 'kokura_district_court' },
+        ]},
+      { id: 'after_demolish', title: '解体後の街', desc: '本部跡・旦過火災・暴排運動の今',
+        steps: [
+          { slug: 'kudokai_hq_kandake' },
+          { slug: 'tanga_market', banner: '2022 旦過市場 二度の大火' },
+          { slug: 'uomachi_arcade' },
+          { slug: 'sakaimachi_quarter' },
+          { slug: 'bouhai_center_fukuoka' },
+        ]},
+    ]
+  },
+  {
+    name: '九州抗争 / 久留米',
+    color: '#9b59b6',
+    tours: [
+      { id: 'dojin_genealogy', title: '道仁会・誠道会・浪川会 系譜', desc: '1971 結成 → 2006 分派 → 2013 再編',
+        steps: [
+          { slug: 'kurume_dojinkai_main_hq', banner: '道仁会 — 1971 久留米結成' },
+          { slug: 'kurume_seidokai_hq' },
+          { slug: 'kurume_namikawakai_hq' },
+        ]},
+      { id: 'kyushu_war', title: '九州抗争 2006-2013', desc: '7年間の発砲と市民生活への影響',
+        steps: [
+          { slug: 'kurume_seidokai_hq', banner: '九州抗争 — 2006 道仁会内紛から' },
+          { slug: 'kurume_bunkagai_central' },
+          { slug: 'amagi_periphery' },
+          { slug: 'arao_omuta' },
+          { slug: 'saga_periphery_kyushu_war' },
+          { slug: 'kurume_keisatsu' },
+          { slug: 'kurume_namikawakai_hq' },
+        ]},
+    ]
+  },
+  {
+    name: '山口組史 / 神戸',
+    color: '#8e44ad',
+    tours: [
+      { id: 'yamaguchi_110years', title: '山口組 110 年史', desc: '1915 結成 → 田岡 → 山一抗争 → 神戸分裂',
+        steps: [
+          { slug: 'kobe_yamaguchi_origin', banner: '1915 山口春吉 神戸港' },
+          { slug: 'kobe_yamaguchi_souhonbu' },
+          { slug: 'shinobu_tsukasa_kobe' },
+          { slug: 'kobe_yamaichi_ground_zero' },
+          { slug: 'kobe_kobeyamaguchigumi_hq' },
+          { slug: 'kobe_kizunakai_hq' },
+        ]},
+      { id: 'yamaichi_war', title: '山一抗争 1985-1989', desc: '5 年 300 事件、暴対法の最大背景',
+        steps: [
+          { slug: 'kobe_yamaichi_ground_zero', banner: '山一抗争 — 1985-08-27 分裂から' },
+          { slug: 'kobe_yamaguchi_souhonbu' },
+          { slug: 'tokyo_diet_again' },
+        ]},
+      { id: 'kobe_split', title: '神戸山口組分裂 2015-', desc: '六代目→神戸→任侠→絆會 三派対立',
+        steps: [
+          { slug: 'kobe_yamaguchi_souhonbu', banner: '2015 神戸山口組分裂' },
+          { slug: 'kobe_kobeyamaguchigumi_hq' },
+          { slug: 'kobe_kizunakai_hq' },
+          { slug: 'hyogo_keisatsu_hq' },
+        ]},
+    ]
+  },
+  {
+    name: '半グレ・トクリュウ',
+    color: '#ff6b35',
+    tours: [
+      { id: 'kanto_rengo', title: '関東連合の興亡(2010-2014)', desc: '海老蔵事件→六本木襲撃→解散',
+        steps: [
+          { slug: 'kanto_rengo_hq', banner: '関東連合 — 2000年代の半グレ' },
+          { slug: 'roppongi_clubs_hangure' },
+          { slug: 'roppongi_flower_attack' },
+          { slug: 'shinjuku_chaika_hangure' },
+          { slug: 'kanto_rengo_ob_network' },
+        ]},
+      { id: 'luffy_full', title: 'ルフィ事件 全過程', desc: '狛江強盗→フィリピン送還→公判',
+        steps: [
+          { slug: 'komae_robbery_2023', banner: 'ルフィ事件 — 2023-01-19 狛江強盗殺人' },
+          { slug: 'philippines_luffy_base' },
+          { slug: 'npa_tokuryu_office' },
+          { slug: 'tokyo_metro_keisatsu' },
+        ]},
+      { id: 'kanto_robberies', title: '関東広域連続強盗 2023-2024', desc: '1都8県への拡散',
+        steps: [
+          { slug: 'komae_robbery_2023', banner: '関東広域連続強盗 — 1都8県' },
+          { slug: 'kanagawa_yokohama_robbery' },
+          { slug: 'chiba_isumi_robbery' },
+          { slug: 'saitama_warabi_robbery' },
+          { slug: 'ibaraki_chikusei_robbery' },
+          { slug: 'tochigi_oyama_robbery' },
+          { slug: 'takasaki_gunma_robbery' },
+        ]},
+      { id: 'tokuryu_intl', title: 'トクリュウ国際拠点', desc: 'フィリピン入管→カンボジアコンパウンド',
+        steps: [
+          { slug: 'philippines_luffy_base', banner: 'トクリュウ国際拠点' },
+          { slug: 'cambodia_compounds_link' },
+          { slug: 'telegram_yamiarbeit' },
+          { slug: 'npa_tokuryu_office' },
+        ]},
+    ]
+  },
+  {
+    name: '全国・国際比較',
+    color: '#16a085',
+    tours: [
+      { id: 'big_4_orgs', title: '4 大組織並列', desc: '山口組・住吉会・稲川会・工藤會',
+        steps: [
+          { slug: 'kobe_yamaguchi_souhonbu', banner: '4 大組織 — 全国の縄張り' },
+          { slug: 'tokyo_sumiyoshi_hq' },
+          { slug: 'tokyo_inagawakai_hq' },
+          { slug: 'kudokai_hq_kandake' },
+        ]},
+      { id: 'world_compare', title: '国際比較 — マフィア・LCN・三合会', desc: 'シチリア・ンドラン・香港・米国',
+        steps: [
+          { slug: 'intl_cosa_nostra_italy', banner: '国際比較 — 世界の組織犯罪' },
+          { slug: 'intl_ndrangheta_italy' },
+          { slug: 'intl_triads_hk' },
+          { slug: 'intl_la_cosa_nostra_us' },
+          { slug: 'intl_mekong_compounds_ref' },
+        ]},
+      { id: 'regulation_30y', title: '反社規制 30 年史', desc: '1991 暴対法→2012 特定危険指定→2024 トクリュウ',
+        steps: [
+          { slug: 'tokyo_diet_again', banner: '反社規制 30 年 — 1991 暴対法から' },
+          { slug: 'tokyo_npa_hq' },
+          { slug: 'kokkai_diet_tokyo' },
+          { slug: 'ofac_treasury_designation' },
+          { slug: 'tokyo_fsa' },
+          { slug: 'npa_tokuryu_office' },
+        ]},
+    ]
+  },
+  {
+    name: '歴史・カルチャー',
+    color: '#f1c40f',
+    tours: [
+      { id: 'postwar_yamiichi', title: '戦後闇市 1945-1955', desc: '原爆代替標的→闇市→草野一家',
+        steps: [
+          { slug: 'kokura_air_raid_1945', banner: '戦後闇市 — 1945-08-09 から' },
+          { slug: 'kokura_yamiichi_1946' },
+          { slug: 'kusano_ikka_origin_kokura' },
+          { slug: 'kudogumi_nakatsu_origin' },
+          { slug: 'yawata_iron_works_area' },
+        ]},
+      { id: 'yakuza_culture', title: 'ヤクザ表象の歴史', desc: '仁義なき戦い→龍が如く→Tokyo Vice',
+        steps: [
+          { slug: 'hiroshima_jingi_movie', banner: 'ヤクザ表象 — 仁義なき戦いから' },
+          { slug: 'crows_kitakyu_setting' },
+          { slug: 'mojiport_kitagata_book' },
+          { slug: 'ryugagotoku_virtual' },
+          { slug: 'tokyo_kabukicho' },
+        ]},
+      { id: 'kokura_two_atoms', title: '小倉と長崎の運命', desc: '原爆代替標的の歴史的偶然',
+        steps: [
+          { slug: 'kokura_air_raid_1945', banner: '1945-08-09 — もし雲がなかったら' },
+          { slug: 'hiroshima_atomic_park' },
+          { slug: 'yawata_seitetsu_1901' },
+        ]},
+    ]
+  },
+];
+
+function renderTourMenu() {
+  const el = document.getElementById('tour-categories');
+  el.innerHTML = '';
+  for (const cat of TOUR_CATEGORIES) {
+    const sec = document.createElement('div');
+    sec.className = 'category';
+    sec.innerHTML = `<div class="cat-head"><span class="cat-color" style="background:${cat.color};"></span>${escapeHtml(cat.name)}</div>`;
+    const grid = document.createElement('div');
+    grid.className = 'tours';
+    for (const t of cat.tours) {
+      const card = document.createElement('div');
+      card.className = 'tour-card';
+      card.style.borderLeft = `3px solid ${cat.color}`;
+      card.innerHTML = `
+        <div class="ttl">${escapeHtml(t.title)}</div>
+        <div class="desc">${escapeHtml(t.desc)}</div>
+        <div class="stops">▶ ${t.steps.length} ステップ</div>`;
+      card.onclick = () => { startTour(t.steps); };
+      grid.appendChild(card);
+    }
+    sec.appendChild(grid);
+    el.appendChild(sec);
+  }
+}
+renderTourMenu();
+
+const tourMenuEl = document.getElementById('tour-menu');
+function openTourMenu() { tourMenuEl.classList.add('show'); }
+function closeTourMenu() { tourMenuEl.classList.remove('show'); }
+document.getElementById('close-tour-menu').onclick = closeTourMenu;
+document.getElementById('fab-tour')?.addEventListener('click', openTourMenu);
 
 tourPlayBtn.onclick = () => {
   tour.paused = !tour.paused;
