@@ -805,10 +805,12 @@ HTML_TEMPLATE = r"""<!doctype html>
     padding:0 8px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   @media (max-width: 720px) {
-    /* Pin at top so detail panel (bottom 50vh in tour mode) never covers it */
+    /* On mobile the timeline is at top (40-150/210px) so we put tour
+       controls right above the bottom detail sheet — visible during a
+       tour without colliding with the timeline above. */
     #tour-controls {
-      top:auto; bottom:auto;
-      top: calc(env(safe-area-inset-top, 0px) + 78px);  /* below topbar+modebar */
+      top:auto;
+      bottom:calc(48vh + 14px);   /* sits 14px above detail sheet (48vh in tour mode) */
       transform:translateX(-50%);
       padding:8px 6px;
     }
@@ -931,11 +933,17 @@ HTML_TEMPLATE = r"""<!doctype html>
     #detail h3 { margin:14px 0 6px; }
     #detail .narr p { font-size:12.5px; line-height:1.65; }
 
-    /* Timeline: visible 110px by default — date+title+summary. Tap to expand to 160. */
-    #timeline { left:0; height:110px; transition:height 0.25s ease; }
-    #timeline.expanded { height:160px; }
-    #timeline-scroll { height:90px; padding:6px 8px; transition:height 0.25s ease; }
-    #timeline.expanded #timeline-scroll { height:140px; padding:8px 10px; }
+    /* Timeline: TOP-mounted on mobile — below the topbar, above the map.
+       Always visible regardless of detail/side panels at the bottom. */
+    #timeline {
+      top:40px; bottom:auto; left:0; right:0;
+      height:110px; border-top:none; border-bottom:2px solid var(--accent);
+      transition:height 0.25s ease;
+      z-index:1080;
+    }
+    #timeline.expanded { height:170px; }
+    #timeline-scroll { height:88px; padding:6px 8px; transition:height 0.25s ease; }
+    #timeline.expanded #timeline-scroll { height:148px; padding:8px 10px; }
     .evt { width:180px; padding:5px 8px; font-size:11px; }
     #timeline.expanded .evt { width:220px; padding:6px 10px; font-size:12px; }
     .evt .sm { -webkit-line-clamp:2; font-size:10.5px; }
@@ -943,32 +951,34 @@ HTML_TEMPLATE = r"""<!doctype html>
     .evt .badges { display:none; }
     #timeline.expanded .evt .badges { display:block; }
     #era-ribbon { height:20px; font-size:10px; }
+    /* Expand tab sits at the BOTTOM of the top-mounted strip on mobile */
     #timeline-expand-tab {
-      position:absolute; top:-24px; right:10px;
+      position:absolute; top:auto; bottom:-22px; right:10px;
       background:var(--accent); color:#fff;
-      padding:4px 14px; border-radius:8px 8px 0 0;
+      padding:4px 14px; border-radius:0 0 8px 8px;
       font-size:11px; font-weight:600; cursor:pointer;
-      box-shadow:0 -1px 4px rgba(0,0,0,0.3);
+      box-shadow:0 2px 4px rgba(0,0,0,0.3);
     }
 
     /* Legend hidden on mobile */
     #legend { display:none; }
 
-    /* Right-side floating controls stack — minimal on mobile */
+    /* All floating controls move to the TOP zone (below timeline) so they
+       stay accessible regardless of bottom detail/side panel state. */
     #layers {
-      top:auto; bottom:72px; right:8px;
-      padding:6px 10px; font-size:11px;
+      top:160px; bottom:auto; right:8px;
+      padding:5px 8px; font-size:10px;
       background:var(--panel); border:1px solid var(--line);
     }
-    #layers label { margin:2px 0; }
+    #layers label { margin:1px 0; display:block; }
     #help-btn {
-      top:auto; bottom:148px; right:8px;
-      width:36px; height:36px; font-size:14px;
+      top:160px; bottom:auto; right:8px;
+      width:34px; height:34px; font-size:13px;
     }
-    /* Mobile FAB stack — left side: filter / menu */
+    /* Mobile FAB stack — TOP-LEFT below timeline, vertical column */
     #mobile-fab-stack {
-      position:fixed; left:8px; bottom:72px; z-index:1110;
-      display:flex; flex-direction:column; gap:8px;
+      position:fixed; left:8px; top:160px; bottom:auto; z-index:1110;
+      display:flex; flex-direction:column; gap:6px;
     }
     #mobile-fab-stack button {
       width:42px; height:42px; border-radius:50%;
@@ -978,6 +988,15 @@ HTML_TEMPLATE = r"""<!doctype html>
     }
     #fab-filter { background:var(--accent2); color:#000; }
     #fab-menu { background:var(--accent3); color:#fff; }
+    /* When timeline is expanded the buttons need to be pushed down */
+    #timeline.expanded ~ #mobile-fab-stack { top:220px; }
+    #timeline.expanded ~ #help-btn { top:220px; }
+    #timeline.expanded ~ #layers { top:220px; }
+    /* But position selectors don't work cross-element easily — apply via body class instead */
+    body.timeline-expanded #mobile-fab-stack,
+    body.timeline-expanded #help-btn,
+    body.timeline-expanded #layers { top:220px; }
+    #help-btn, #layers, #mobile-fab-stack { transition:top 0.25s ease; }
 
     /* Splash: smaller, single-column */
     #splash { padding:14px; overflow-y:auto; align-items:flex-start; padding-top:30px; }
@@ -2082,8 +2101,9 @@ ERA_ORDER.forEach(era => {
 const timelineEl = document.getElementById('timeline');
 document.getElementById('timeline-expand-tab')?.addEventListener('click', () => {
   timelineEl.classList.toggle('expanded');
+  document.body.classList.toggle('timeline-expanded', timelineEl.classList.contains('expanded'));
   const tab = document.getElementById('timeline-expand-tab');
-  tab.textContent = timelineEl.classList.contains('expanded') ? '▼ 閉じる' : '▲ 詳しく';
+  tab.textContent = timelineEl.classList.contains('expanded') ? '▼ 閉じる' : '▼ 詳しく';
 });
 
 // ===== Marker thinning at low zoom (mobile) =====
