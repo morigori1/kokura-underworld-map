@@ -724,22 +724,40 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   /* ===== Help overlay ===== */
   #help-overlay {
-    position:absolute; inset:0; z-index:1900; background:rgba(0,0,0,0.6);
+    position:fixed; inset:0; z-index:1900; background:rgba(8,9,11,0.96);
     display:none; pointer-events:auto;
+    overflow-y:auto; padding:30px 22px;
   }
   #help-overlay.show { display:block; }
-  #help-overlay .label {
-    position:absolute; background:var(--accent); color:#fff;
-    padding:6px 10px; border-radius:4px; font-size:11px; font-weight:600;
-    box-shadow:0 0 0 1px rgba(0,0,0,0.5);
+  #help-overlay h2 {
+    color:var(--accent2); font-size:20px; letter-spacing:0.06em;
+    text-align:center; margin:0 0 8px;
   }
-  #help-overlay .arrow {
-    position:absolute; font-size:18px; color:var(--accent2);
+  #help-overlay .sub {
+    color:var(--ink-dim); font-size:11px; text-align:center;
+    margin:0 0 22px; line-height:1.6;
+  }
+  #help-overlay .row {
+    display:flex; gap:10px; align-items:flex-start;
+    padding:10px 0; border-bottom:1px solid var(--line);
+    max-width:600px; margin:0 auto;
+  }
+  #help-overlay .ico {
+    width:36px; height:36px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:50%; font-size:18px;
+    background:var(--accent); color:#fff;
+  }
+  #help-overlay .tx { flex:1; font-size:12.5px; line-height:1.65; }
+  #help-overlay .tx b { color:var(--accent2); font-size:13px; }
+  #help-overlay .platform {
+    color:var(--accent); font-size:10px; font-weight:700;
+    letter-spacing:0.08em; margin-bottom:2px;
   }
   #help-overlay .close-help {
-    position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
-    background:var(--accent); color:#fff; border:none; padding:10px 28px;
-    border-radius:4px; font-size:13px; font-weight:600; cursor:pointer;
+    display:block; margin:24px auto 0;
+    background:var(--accent); color:#fff; border:none; padding:12px 36px;
+    border-radius:4px; font-size:14px; font-weight:600; cursor:pointer;
   }
   #help-btn {
     position:absolute; top:170px; right:12px; z-index:1100;
@@ -1282,23 +1300,120 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div>
 
 <div id="help-overlay">
-  <div class="label" style="top:60px; left:50%; transform:translateX(-50%); max-width:80%; text-align:center;">
-    ▲ 上部チップ: 色分けモード切替(種別/派閥/時代)+ 派閥フィルタ + 出典種別フィルタ
+  <h2>🗺️ 使い方ガイド</h2>
+  <div class="sub">
+    227 拠点・382 事件・35 人物・28 ツアーを横断する OSINT 可視化。<br>
+    マーカー → 詳細パネル / ツアー → ガイド再生 / 検索 → 全層横断
   </div>
-  <div class="label" style="top:130px; left:16px; max-width:280px;">
-    ◀ 左サイド: 系譜・系統樹・人物・訴訟・ゴシップ・推移チャート(目次から飛べる)
+
+  <div class="row">
+    <div class="ico">🔍</div>
+    <div class="tx">
+      <b>検索バー(画面上部)</b><br>
+      拠点・事件・人物・軼話・ツアーを横断検索。タップで即時ジャンプ。
+      「狛江」「ルフィ」「神岳」「OFAC」など何でも。
+    </div>
   </div>
-  <div class="label" style="bottom:170px; left:50%; transform:translateX(-50%); max-width:80%; text-align:center;">
-    ▼ 下部: 全182事件タイムライン(時代リボンで絞込・カードクリックで詳細へ)
+
+  <div class="row">
+    <div class="ico" style="background:#d9534f;">📍</div>
+    <div class="tx">
+      <b>地図マーカー</b><br>
+      色で派閥・種別を表示。タップ → ポップアップ → 「詳細を開く」で
+      <b>下部パネル</b>に展開(写真・解説・事件・軼話・街のいま)。
+    </div>
   </div>
-  <div class="label" style="top:180px; right:60px; max-width:240px;">
-    ▶ 右上ボタン: POI・衛星トグル・このヘルプ
+
+  <div class="row">
+    <div class="ico" style="background:#e74c3c;">🎬</div>
+    <div class="tx">
+      <div class="platform">📱 左下 FAB</div>
+      <b>ツアー選択(🎬)</b><br>
+      28 ツアーを 7 カテゴリ別に整理(工藤會 / 九州抗争 / 山口組 /
+      半グレトクリュウ / 全国比較 / 歴史カルチャー / テーマ深掘り)。
+      再生中は ⏮ ⏸ ⏭ ✕ で操作。
+    </div>
   </div>
-  <div class="label" style="top:260px; left:50%; transform:translateX(-50%); max-width:80%; text-align:center; background:var(--gold); color:#000;">
-    ピンをタップ → 「詳細を開く」で右パネルに展開
-    <br>(衛星タイムマシン・写真・判決抜粋・軼話・街のいま)
+
+  <div class="row">
+    <div class="ico" style="background:#f5b041; color:#000;">🔍</div>
+    <div class="tx">
+      <div class="platform">📱 左下 FAB</div>
+      <b>絞り込み(🔍)</b><br>
+      色分けモード(種別 / 派閥 / 時代)・派閥フィルタ・出典種別フィルタ・
+      時代フィルタを一括設定するモーダル。
+    </div>
   </div>
-  <button class="close-help" id="close-help">わかった</button>
+
+  <div class="row">
+    <div class="ico" style="background:#3498db;">☰</div>
+    <div class="tx">
+      <div class="platform">📱 左下 FAB</div>
+      <b>目次(☰)</b><br>
+      組織系譜・組織系統樹・主要人物・主要訴訟・ゴシップ層・
+      警察白書ベース推移チャートを下部パネルで表示。
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:#9aa6b2;">📍</div>
+    <div class="tx">
+      <div class="platform">📱 左下 FAB</div>
+      <b>周辺POI(📍)</b><br>
+      主要拠点周辺の OSM 地物(警察署・市役所・学校・寺社など)を
+      地図上に表示/非表示。ON 時は赤色に変化。
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:#34495e;">🛰</div>
+    <div class="tx">
+      <div class="platform">📱 左下 FAB</div>
+      <b>衛星画像(🛰)</b><br>
+      Esri World Imagery の衛星写真に切替。本部跡などは詳細パネルの
+      「衛星タイムマシン」で過去フレーム(Wayback)も見られる。
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:var(--accent2); color:#000;">▼</div>
+    <div class="tx">
+      <div class="platform">📱 右上</div>
+      <b>時系列タイムライン折りたたみ(▼/▲)</b><br>
+      タップで 4 段階循環: hidden(0)→ cards(110px)→ exp(170px)→ min(22px)。
+      最後の選択は localStorage に保存。
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico">🎬</div>
+    <div class="tx">
+      <b>ツアー中の操作</b><br>
+      画面上部に <b>⏮ / ⏸ / ⏭ / 1/N / ✕</b> のコントロールバーが出現。
+      一時停止して読み込み、好きなだけ滞在してから次へ。
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico">🟡</div>
+    <div class="tx">
+      <b>軼話カード(金縁)</b><br>
+      報道書籍ベースのゴシップ層。判決抜粋(青系)・公的記録とは
+      別格表示。★1〜5 の spice レベルで重要度。
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico">⚖️</div>
+    <div class="tx">
+      <b>編集ポリシー</b><br>
+      被害者の氏名・自宅番地は載せない。
+      判決公開済の建物名・組織所在地・公的施設の住所は明示。
+      公開報道・判決文・警察白書・OFAC SDN・国会議事録に限る。
+    </div>
+  </div>
+
+  <button class="close-help" id="close-help" type="button">わかった</button>
 </div>
 
 <div id="legend"></div>
