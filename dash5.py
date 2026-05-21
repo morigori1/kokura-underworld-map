@@ -917,20 +917,9 @@ HTML_TEMPLATE = r"""<!doctype html>
       padding:10px; border-radius:4px; font-size:13px; font-weight:600;
     }
 
-    /* Side panel becomes a slide-up drawer — fully hidden by default,
-       capped at 50vh so the map always gets at least half the screen */
-    #side {
-      position:fixed; top:auto; left:0; right:0; bottom:0; width:100%;
-      max-height:50vh; height:50vh;
-      z-index:1060;
-      transform:translateY(100%);
-      transition:transform 0.3s ease;
-      border-right:none; border-top:2px solid var(--accent);
-      border-radius:14px 14px 0 0;
-      padding:14px 14px 16px;
-      box-shadow:0 -6px 20px rgba(0,0,0,0.5);
-    }
-    #side::before { display:none; }  /* no peek tab; opened via toolbar */
+    /* Side panel uses the same unified bottom-sheet styles as #detail
+       (defined above). Override z-index so detail can layer on top. */
+    #side { z-index:1060; }
     #detail { z-index:1100; }
     #side.open { transform:translateY(0); }
     #side::before {
@@ -942,41 +931,50 @@ HTML_TEMPLATE = r"""<!doctype html>
     #side.open::before { content:'━━━ タップで閉じる'; }
     #toc a { display:inline-block; margin:2px 6px 2px 0; }
 
-    /* Detail panel: bottom sheet — capped at <half screen on mobile.
-       Default 48vh, tour mode 40vh. Map always gets ≥52vh / 60vh. */
-    #detail {
+    /* === Unified bottom-sheet pattern on mobile ===
+       Both #detail and #side use the same dimensions & animation:
+       - Slide up from bottom to a fixed 50vh (capped at half screen)
+       - Drag handle at top, X close button at top-right
+       - Tap on backdrop (above the sheet) closes the sheet
+       Map always gets ≥ 50vh. */
+    #detail, #side {
       position:fixed; top:auto; left:0; right:0; bottom:0;
       width:100%; max-width:none;
-      height:48vh; max-height:48vh;
-      border-left:none; border-top:2px solid var(--accent);
-      border-radius:14px 14px 0 0;
-      padding:8px 16px 18px;
+      height:50vh; max-height:50vh;
+      border-left:none; border-right:none;
+      border-top:2px solid var(--accent);
+      border-radius:16px 16px 0 0;
+      padding:14px 18px 18px;
       transform:translateY(100%);
-      transition:transform 0.32s ease, height 0.32s ease;
-      box-shadow:0 -6px 20px rgba(0,0,0,0.5);
+      transition:transform 0.32s ease;
+      box-shadow:0 -6px 24px rgba(0,0,0,0.55);
+      overflow-y:auto;
     }
-    #detail.open { transform:translateY(0); }
-    /* When a tour is active, shrink further so map gets 60vh */
-    body.tour-active #detail { height:40vh; max-height:40vh; }
-    /* Drag handle at top */
-    #detail::before {
+    #detail.open, #side.open { transform:translateY(0); }
+    /* Tour mode: shrink to 42vh so tour controls + map stay clear */
+    body.tour-active #detail, body.tour-active #side { height:42vh; max-height:42vh; }
+
+    /* Drag handle at top — shared visual cue */
+    #detail::before, #side::before {
       content:''; display:block;
       width:42px; height:4px; border-radius:2px;
-      background:var(--ink-dim); opacity:0.5;
-      margin:6px auto 8px;
+      background:var(--ink-dim); opacity:0.6;
+      margin:0 auto 10px;
     }
-    /* Larger close button at top-right */
-    #detail .close {
-      position:absolute; top:6px; right:10px;
-      width:36px; height:36px;
+
+    /* Unified close button — top-right red circle */
+    #detail .close, #side .close-side {
+      position:absolute; top:8px; right:10px;
+      width:38px; height:38px;
       display:flex; align-items:center; justify-content:center;
       background:var(--accent); color:#fff;
       border-radius:50%; font-size:18px; font-weight:700;
-      box-shadow:0 2px 6px rgba(0,0,0,0.5);
-      float:none; padding:0;
+      box-shadow:0 2px 6px rgba(0,0,0,0.55);
+      float:none; padding:0; border:none;
+      cursor:pointer; z-index:5;
     }
-    #detail .close:hover { color:#fff; background:var(--accent); }
-    #detail h2 { padding-right:50px; font-size:16px; }
+
+    #detail h2 { padding-right:50px; font-size:16px; margin-top:0; }
     #detail .image img { max-height:200px; object-fit:cover; }
     #detail h3 { margin:14px 0 6px; }
     #detail .narr p { font-size:12.5px; line-height:1.65; }
@@ -1204,6 +1202,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div>
 
 <div id="side">
+  <button class="close-side" type="button" onclick="document.getElementById('side').classList.remove('open')" aria-label="閉じる">✕</button>
   <div id="toc">
     <div class="label">目次 — 各セクションへ</div>
     <a data-jump="sec-chron">系譜</a><a data-jump="sec-tree">系統樹</a><a data-jump="sec-persons">人物</a><a data-jump="sec-pros">訴訟</a><a data-jump="sec-lore">ゴシップ</a><a data-jump="sec-charts">推移</a>
@@ -2378,41 +2377,8 @@ ERA_ORDER.forEach(era => {
   mEras.appendChild(c);
 });
 
-// ===== Timeline 4-state toggle =====
-// Cycle: hidden → cards → exp → min → hidden
-// Simple arrow icon shows direction of next state.
-const timelineEl = document.getElementById('timeline');
-const TL_STATES = ['hidden', 'cards', 'exp', 'min'];
-// Icon = the arrow that hints at what next tap will do
-const TL_ICONS = {
-  hidden: '▼',  // tap to OPEN (show cards)
-  cards:  '▼',  // tap to expand MORE
-  exp:    '▲',  // tap to shrink (to min)
-  min:    '▲',  // tap to hide
-};
-const TL_STORAGE_KEY = 'kokura_timeline_state_v2';
-const _isMobileForTl = window.matchMedia('(max-width: 720px)').matches;
-const _savedTl = localStorage.getItem(TL_STORAGE_KEY);
-let tlStateIdx = (_savedTl && TL_STATES.includes(_savedTl))
-  ? TL_STATES.indexOf(_savedTl)
-  : (_isMobileForTl ? 0 /* hidden */ : 1 /* cards */);
-function applyTimelineState() {
-  const state = TL_STATES[tlStateIdx];
-  document.body.classList.remove('timeline-cards', 'timeline-exp', 'timeline-min', 'timeline-hidden');
-  document.body.classList.add('timeline-' + state);
-  const tab = document.getElementById('timeline-expand-tab');
-  if (tab) tab.textContent = TL_ICONS[state];
-  try { localStorage.setItem(TL_STORAGE_KEY, state); } catch (e) {}
-}
-// Inline onclick attribute calls this; also attach via JS as backup.
-function cycleTimelineState() {
-  tlStateIdx = (tlStateIdx + 1) % TL_STATES.length;
-  applyTimelineState();
-}
-window.cycleTimelineState = cycleTimelineState;
-
-// ===== FAB button global handlers (called from inline onclick) =====
-// Defined here at the end of JS so all dependencies are in scope.
+// Timeline cycle is defined in the IIFE at top of script.
+// FAB window globals (defined here once, all dependencies in scope).
 window.fabTour = function() {
   try { openTourMenu(); } catch (e) { console.error('fabTour:', e); }
 };
@@ -2443,13 +2409,6 @@ window.fabSat = function() {
     if (btn) btn.style.background = cb.checked ? '#d9534f' : '#34495e';
   } catch (e) { console.error('fabSat:', e); }
 };
-// Backup event listener (in case inline onclick is blocked)
-const _tabEl = document.getElementById('timeline-expand-tab');
-if (_tabEl) {
-  _tabEl.addEventListener('click', cycleTimelineState);
-  _tabEl.addEventListener('touchend', (e) => { e.preventDefault(); cycleTimelineState(); }, { passive: false });
-}
-applyTimelineState();
 
 // ===== Marker thinning at low zoom (mobile) =====
 // At zoom < 14 (wide view), show only HQ + major attack sites, not all 89 markers
