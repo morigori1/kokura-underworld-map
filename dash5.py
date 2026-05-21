@@ -1015,31 +1015,31 @@ HTML_TEMPLATE = r"""<!doctype html>
     body.timeline-min #era-ribbon { height:18px; font-size:9px; }
     body.timeline-hidden #era-ribbon { height:0; opacity:0; overflow:hidden; }
 
-    /* Toggle tab: sticks out from bottom of timeline.
-       In hidden mode, tab becomes a fixed-position floating button at top.
-       z-index 1500 keeps it above help/layers/side/detail in all states. */
+    /* Toggle tab: simple arrow button — always visible, easy tap target.
+       In hidden mode, tab becomes a fixed-position circular button at top. */
     #timeline-expand-tab {
-      position:absolute; top:auto; bottom:-26px; right:10px;
+      position:absolute; top:auto; bottom:-30px; right:10px;
+      width:44px; height:30px;
       background:var(--accent); color:#fff;
-      padding:6px 14px; border-radius:0 0 10px 10px;
-      font-size:12px; font-weight:700; cursor:pointer;
+      border:none; border-radius:0 0 8px 8px;
+      font-size:18px; font-weight:700; cursor:pointer;
       box-shadow:0 2px 8px rgba(0,0,0,0.5);
-      z-index:1500; transition:all 0.2s ease;
-      min-width:80px; min-height:30px;
-      user-select:none; -webkit-tap-highlight-color:rgba(255,255,255,0.2);
+      z-index:1500;
+      user-select:none; -webkit-tap-highlight-color:rgba(255,255,255,0.3);
       pointer-events:auto;
-      text-align:center;
+      display:flex; align-items:center; justify-content:center;
+      padding:0;
+      transition:background 0.15s, transform 0.15s;
     }
+    #timeline-expand-tab:active { transform:scale(0.92); background:#b71c1c; }
     body.timeline-hidden #timeline-expand-tab {
       position:fixed; top:46px; right:10px; bottom:auto;
-      border-radius:18px;
-      padding:8px 16px;
+      width:44px; height:44px;
+      border-radius:50%;
       background:var(--accent2); color:#000;
-      font-size:13px;
-      min-height:36px;
+      font-size:20px;
       box-shadow:0 4px 12px rgba(0,0,0,0.6);
       border:2px solid #fff;
-      z-index:1500;
     }
 
     /* Legend hidden on mobile */
@@ -1304,7 +1304,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 <div id="map"></div>
 
 <div id="timeline">
-  <div id="timeline-expand-tab">▲ 詳しく</div>
+  <button id="timeline-expand-tab" type="button" onclick="cycleTimelineState()" aria-label="タイムライン表示切替">▼</button>
   <div id="era-ribbon"></div>
   <div id="timeline-scroll">
     <div class="empty" id="tl-empty" style="color:var(--ink-dim); font-size:12px; padding:30px 0; text-align:center; white-space:normal;">
@@ -2338,15 +2338,15 @@ ERA_ORDER.forEach(era => {
 
 // ===== Timeline 4-state toggle =====
 // Cycle: hidden → cards → exp → min → hidden
-// Mobile starts in 'hidden' (map gets the whole screen by default).
-// Desktop starts in 'cards'. Last choice is remembered in localStorage.
+// Simple arrow icon shows direction of next state.
 const timelineEl = document.getElementById('timeline');
 const TL_STATES = ['hidden', 'cards', 'exp', 'min'];
-const TL_LABELS = {
-  hidden: '▼ 年表を出す',
-  cards:  '▼ 詳しく',
-  exp:    '▲ 縮める',
-  min:    '▲ 完全に隠す',
+// Icon = the arrow that hints at what next tap will do
+const TL_ICONS = {
+  hidden: '▼',  // tap to OPEN (show cards)
+  cards:  '▼',  // tap to expand MORE
+  exp:    '▲',  // tap to shrink (to min)
+  min:    '▲',  // tap to hide
 };
 const TL_STORAGE_KEY = 'kokura_timeline_state_v2';
 const _isMobileForTl = window.matchMedia('(max-width: 720px)').matches;
@@ -2359,13 +2359,21 @@ function applyTimelineState() {
   document.body.classList.remove('timeline-cards', 'timeline-exp', 'timeline-min', 'timeline-hidden');
   document.body.classList.add('timeline-' + state);
   const tab = document.getElementById('timeline-expand-tab');
-  if (tab) tab.textContent = TL_LABELS[state];
+  if (tab) tab.textContent = TL_ICONS[state];
   try { localStorage.setItem(TL_STORAGE_KEY, state); } catch (e) {}
 }
-document.getElementById('timeline-expand-tab')?.addEventListener('click', () => {
+// Inline onclick attribute calls this; also attach via JS as backup.
+function cycleTimelineState() {
   tlStateIdx = (tlStateIdx + 1) % TL_STATES.length;
   applyTimelineState();
-});
+}
+window.cycleTimelineState = cycleTimelineState;
+// Backup event listener (in case inline onclick is blocked)
+const _tabEl = document.getElementById('timeline-expand-tab');
+if (_tabEl) {
+  _tabEl.addEventListener('click', cycleTimelineState);
+  _tabEl.addEventListener('touchend', (e) => { e.preventDefault(); cycleTimelineState(); }, { passive: false });
+}
 applyTimelineState();
 
 // ===== Marker thinning at low zoom (mobile) =====
