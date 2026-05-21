@@ -40,6 +40,7 @@ PHASES = [
     ('phase23_hangure.py',     'Hangure / Tokuryu — 半グレ・準暴力団・トクリュウ(関東連合・ルフィ事件・連続強盗・闇バイト)'),
     ('phase24_more_cases.py',  'Hangure/Tokuryu individual cases + 沖縄/京都/名古屋/大阪 regional sites'),
     ('phase25_individual_cases.py', '報道で実名公開済の個別事案(海老蔵事件・ルフィ事件被告・各県強盗等)'),
+    ('phase26_thematic.py',    '経済/政治/興行/スポーツ/薬物/戦後初期抗争のテーマ深掘り(神戸芸能社・児玉誉士夫・ロッキード・バブル地上げ・阪神大震災・黒い霧・大相撲野球賭博・覚せい剤戦後史)'),
     ('dash5.py',               'render index.html'),
 ]
 
