@@ -2246,14 +2246,19 @@ for (const c of (DATA.chronicle || [])) {
     },
   });
 }
-// Tours
-for (const cat of TOUR_CATEGORIES) {
-  for (const t of cat.tours) {
-    searchIndex.push({
-      type: 'tour', ico: '🎬', label: t.title, sub: cat.name + ' / ' + t.steps.length + ' steps',
-      extra: t.desc || '',
-      onclick: () => startTour(t.steps),
-    });
+// Tours — TOUR_CATEGORIES is declared later in the script, so check
+// existence to avoid TDZ ReferenceError. Tours are appended via a
+// deferred function called at the bottom of the script.
+function _appendTourSearchIndex() {
+  if (typeof TOUR_CATEGORIES === 'undefined') return;
+  for (const cat of TOUR_CATEGORIES) {
+    for (const t of cat.tours) {
+      searchIndex.push({
+        type: 'tour', ico: '🎬', label: t.title, sub: cat.name + ' / ' + t.steps.length + ' steps',
+        extra: t.desc || '',
+        onclick: () => startTour(t.steps),
+      });
+    }
   }
 }
 
@@ -2416,6 +2421,9 @@ ERA_ORDER.forEach(era => {
   };
   mEras.appendChild(c);
 });
+
+// Now that TOUR_CATEGORIES is declared, fold tour entries into the search index.
+try { _appendTourSearchIndex(); } catch (e) { console.error('append tour search:', e); }
 
 // Timeline cycle is defined in the IIFE at top of script.
 // FAB window globals (defined here once, all dependencies in scope).
