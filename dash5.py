@@ -1071,34 +1071,19 @@ HTML_TEMPLATE = r"""<!doctype html>
     }
     #fab-filter { background:var(--accent2); color:#000; }
     #fab-menu { background:var(--accent3); color:#fff; }
-    /* Vertical stack on right edge. Each floating item starts after the
-       tab so the tab is always the top-most right-edge control.
-       Tab heights:  hidden 36+8gap=44 below 46 → help starts at 90
-                     min 30+8 below 84 → help at 92
-                     cards 30+8 below 172 → help at 180
-                     exp 30+8 below 232 → help at 240 */
-    body.timeline-hidden #help-btn  { top:94px;  right:8px; }
-    body.timeline-hidden #layers    { top:136px; right:8px; }
+    /* On mobile, the right-side floating help/layers are HIDDEN —
+       their functions are consolidated into the left FAB stack. */
+    #help-btn, #layers { display:none !important; }
 
-    body.timeline-min    #help-btn  { top:96px;  right:8px; }
-    body.timeline-min    #layers    { top:138px; right:8px; }
-
-    body.timeline-cards  #help-btn  { top:184px; right:8px; }
-    body.timeline-cards  #layers    { top:226px; right:8px; }
-
-    body.timeline-exp    #help-btn  { top:244px; right:8px; }
-    body.timeline-exp    #layers    { top:286px; right:8px; }
-
-    /* FAB stack on the LEFT edge — synced with help-btn top per state */
+    /* FAB stack on LEFT edge — 6 buttons, smaller on mobile */
+    #mobile-fab-stack button {
+      width:38px; height:38px; font-size:16px;
+    }
     body.timeline-hidden #mobile-fab-stack { top:94px;  }
     body.timeline-min    #mobile-fab-stack { top:96px;  }
     body.timeline-cards  #mobile-fab-stack { top:184px; }
     body.timeline-exp    #mobile-fab-stack { top:244px; }
-
-    #help-btn, #layers, #mobile-fab-stack { transition:top 0.25s ease; }
-    /* z-index hierarchy: tab(1500) > help/layers(1100) > timeline(1080) */
-    #help-btn { z-index:1100; }
-    #layers   { z-index:1100; }
+    #mobile-fab-stack { transition:top 0.25s ease; }
 
     /* Splash: smaller, single-column */
     #splash { padding:14px; overflow-y:auto; align-items:flex-start; padding-top:30px; }
@@ -1249,6 +1234,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   <button id="fab-tour" title="ツアー選択" style="background:#e74c3c; color:#fff;">🎬</button>
   <button id="fab-filter" title="絞り込み・色分け">🔍</button>
   <button id="fab-menu" title="目次・系譜・人物">☰</button>
+  <button id="fab-help" title="使い方ガイド" style="background:#f1c40f; color:#000;">?</button>
+  <button id="fab-poi" title="周辺POIを表示" style="background:#9aa6b2; color:#fff;">📍</button>
+  <button id="fab-sat" title="衛星画像に切替" style="background:#34495e; color:#fff;">🛰</button>
 </div>
 
 <div id="filter-modal">
@@ -2966,6 +2954,21 @@ function openTourMenu() { tourMenuEl.classList.add('show'); }
 function closeTourMenu() { tourMenuEl.classList.remove('show'); }
 document.getElementById('close-tour-menu').onclick = closeTourMenu;
 document.getElementById('fab-tour')?.addEventListener('click', openTourMenu);
+
+// Mobile FAB: help / POI / satellite — same handlers as right-side buttons
+document.getElementById('fab-help')?.addEventListener('click', () => helpEl.classList.add('show'));
+document.getElementById('fab-poi')?.addEventListener('click', () => {
+  togglePoi.checked = !togglePoi.checked;
+  togglePoi.dispatchEvent(new Event('change'));
+  const btn = document.getElementById('fab-poi');
+  btn.style.background = togglePoi.checked ? 'var(--accent)' : '#9aa6b2';
+});
+document.getElementById('fab-sat')?.addEventListener('click', () => {
+  toggleSat.checked = !toggleSat.checked;
+  toggleSat.dispatchEvent(new Event('change'));
+  const btn = document.getElementById('fab-sat');
+  btn.style.background = toggleSat.checked ? 'var(--accent)' : '#34495e';
+});
 
 tourPlayBtn.onclick = () => {
   tour.paused = !tour.paused;
