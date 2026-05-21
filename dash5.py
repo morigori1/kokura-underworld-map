@@ -1016,20 +1016,30 @@ HTML_TEMPLATE = r"""<!doctype html>
     body.timeline-hidden #era-ribbon { height:0; opacity:0; overflow:hidden; }
 
     /* Toggle tab: sticks out from bottom of timeline.
-       In hidden mode, tab becomes a fixed-position floating button at top. */
+       In hidden mode, tab becomes a fixed-position floating button at top.
+       z-index 1500 keeps it above help/layers/side/detail in all states. */
     #timeline-expand-tab {
-      position:absolute; top:auto; bottom:-22px; right:10px;
+      position:absolute; top:auto; bottom:-26px; right:10px;
       background:var(--accent); color:#fff;
-      padding:4px 14px; border-radius:0 0 8px 8px;
-      font-size:11px; font-weight:600; cursor:pointer;
-      box-shadow:0 2px 4px rgba(0,0,0,0.3);
-      z-index:1090; transition:all 0.2s ease;
+      padding:6px 14px; border-radius:0 0 10px 10px;
+      font-size:12px; font-weight:700; cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);
+      z-index:1500; transition:all 0.2s ease;
+      min-width:80px; min-height:30px;
+      user-select:none; -webkit-tap-highlight-color:rgba(255,255,255,0.2);
+      pointer-events:auto;
+      text-align:center;
     }
     body.timeline-hidden #timeline-expand-tab {
       position:fixed; top:46px; right:10px; bottom:auto;
-      border-radius:14px;
-      padding:5px 12px;
+      border-radius:18px;
+      padding:8px 16px;
       background:var(--accent2); color:#000;
+      font-size:13px;
+      min-height:36px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.6);
+      border:2px solid #fff;
+      z-index:1500;
     }
 
     /* Legend hidden on mobile */
@@ -1061,33 +1071,34 @@ HTML_TEMPLATE = r"""<!doctype html>
     }
     #fab-filter { background:var(--accent2); color:#000; }
     #fab-menu { background:var(--accent3); color:#fff; }
-    /* Vertical stack on the right edge — different `top` per timeline state.
-       In hidden state the tab pill sits at top:46 right:10 (~28px tall),
-       so help-btn starts below it at top:88; layers below help at top:130.
-       In other states, floating items sit below the tab that hangs ~22px
-       below the timeline. */
-    body.timeline-hidden #help-btn  { top:88px;  right:8px; }
-    body.timeline-hidden #layers    { top:130px; right:8px; }
+    /* Vertical stack on right edge. Each floating item starts after the
+       tab so the tab is always the top-most right-edge control.
+       Tab heights:  hidden 36+8gap=44 below 46 → help starts at 90
+                     min 30+8 below 84 → help at 92
+                     cards 30+8 below 172 → help at 180
+                     exp 30+8 below 232 → help at 240 */
+    body.timeline-hidden #help-btn  { top:94px;  right:8px; }
+    body.timeline-hidden #layers    { top:136px; right:8px; }
 
-    /* min timeline height 22px → tab at ~62-84 → help below */
-    body.timeline-min    #help-btn  { top:92px;  right:8px; }
-    body.timeline-min    #layers    { top:134px; right:8px; }
+    body.timeline-min    #help-btn  { top:96px;  right:8px; }
+    body.timeline-min    #layers    { top:138px; right:8px; }
 
-    /* cards timeline height 110px → tab at ~150-172 → help below */
-    body.timeline-cards  #help-btn  { top:180px; right:8px; }
-    body.timeline-cards  #layers    { top:222px; right:8px; }
+    body.timeline-cards  #help-btn  { top:184px; right:8px; }
+    body.timeline-cards  #layers    { top:226px; right:8px; }
 
-    /* exp timeline height 170px → tab at ~210-232 → help below */
-    body.timeline-exp    #help-btn  { top:240px; right:8px; }
-    body.timeline-exp    #layers    { top:282px; right:8px; }
+    body.timeline-exp    #help-btn  { top:244px; right:8px; }
+    body.timeline-exp    #layers    { top:286px; right:8px; }
 
     /* FAB stack on the LEFT edge — synced with help-btn top per state */
-    body.timeline-hidden #mobile-fab-stack { top:88px;  }
-    body.timeline-min    #mobile-fab-stack { top:92px;  }
-    body.timeline-cards  #mobile-fab-stack { top:180px; }
-    body.timeline-exp    #mobile-fab-stack { top:240px; }
+    body.timeline-hidden #mobile-fab-stack { top:94px;  }
+    body.timeline-min    #mobile-fab-stack { top:96px;  }
+    body.timeline-cards  #mobile-fab-stack { top:184px; }
+    body.timeline-exp    #mobile-fab-stack { top:244px; }
 
     #help-btn, #layers, #mobile-fab-stack { transition:top 0.25s ease; }
+    /* z-index hierarchy: tab(1500) > help/layers(1100) > timeline(1080) */
+    #help-btn { z-index:1100; }
+    #layers   { z-index:1100; }
 
     /* Splash: smaller, single-column */
     #splash { padding:14px; overflow-y:auto; align-items:flex-start; padding-top:30px; }
