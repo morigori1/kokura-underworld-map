@@ -341,8 +341,15 @@ HTML_TEMPLATE = r"""<!doctype html>
 <meta charset="utf-8">
 <title>小倉組織犯罪史タイムマシン — Kokura Underworld Map</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta property="og:title" content="小倉組織犯罪史タイムマシン">
-<meta property="og:description" content="工藤會を軸に小倉の組織犯罪史を可視化する OSINT + 軼話ダッシュボード">
+<meta property="og:title" content="小倉組織犯罪史タイムマシン — Kokura Underworld Map">
+<meta property="og:description" content="工藤會を軸に戦後闇市〜頂上作戦・本部解体までの北九州組織犯罪史を、報道・判決・OFAC制裁・書籍・映像参照などを横断する OSINT 可視化(89拠点・182事件・241出典)">
+<meta property="og:url" content="https://morigori1.github.io/kokura-underworld-map/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://morigori1.github.io/kokura-underworld-map/images/kudokai_hq_kandake_4.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="小倉組織犯罪史タイムマシン">
+<meta name="twitter:description" content="工藤會を軸とする北九州組織犯罪史の OSINT 可視化(89拠点・182事件・241出典・13メディア種別)">
+<meta name="twitter:image" content="https://morigori1.github.io/kokura-underworld-map/images/kudokai_hq_kandake_4.jpg">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <script src="vendor/leaflet/leaflet.js"></script>
 <style>
@@ -412,8 +419,29 @@ HTML_TEMPLATE = r"""<!doctype html>
     background:var(--panel); border-right:1px solid var(--line); overflow:auto;
     padding:14px 16px;
   }
-  #side h2 { font-size:12px; margin:18px 0 8px; color:var(--accent2); letter-spacing:0.08em; }
-  #side h2:first-child { margin-top:0; }
+  #side h2 {
+    font-size:12px; margin:18px 0 8px; color:var(--accent2); letter-spacing:0.08em;
+    cursor:pointer; user-select:none;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  #side h2:first-of-type { margin-top:0; }
+  #side h2::after { content:'▾'; font-size:11px; color:var(--ink-dim); transition:transform 0.18s; }
+  #side h2.collapsed::after { transform:rotate(-90deg); }
+  #side h2.collapsed + .section-body { display:none; }
+  #side .section-body { overflow:hidden; }
+
+  /* TOC at top of side panel */
+  #toc {
+    background:rgba(0,0,0,0.35); border:1px solid var(--line);
+    border-radius:6px; padding:8px 10px; margin:0 0 14px;
+    font-size:11px; line-height:1.8;
+  }
+  #toc .label { color:var(--ink-dim); font-size:10px; letter-spacing:0.08em; margin-bottom:4px; }
+  #toc a {
+    color:var(--ink); text-decoration:none; margin-right:10px;
+    border-bottom:1px dotted var(--line); cursor:pointer;
+  }
+  #toc a:hover { color:var(--accent2); border-bottom-color:var(--accent2); }
   .chron {
     border-left:3px solid var(--line); padding:6px 0 6px 12px; margin:8px 0;
     cursor:pointer; transition: border-color 0.2s, background 0.2s;
@@ -601,10 +629,10 @@ HTML_TEMPLATE = r"""<!doctype html>
   #splash .tag { color:var(--accent); font-size:13px; letter-spacing:0.14em; margin-bottom:14px; }
   #splash .sub { color:var(--ink-dim); max-width:640px; line-height:1.8; margin-bottom:28px; font-size:13px; }
   #splash .quote {
-    color:var(--gold); font-style:italic; font-size:15px; margin:14px 0 28px;
+    color:var(--gold); font-style:italic; font-size:14px; margin:8px 0 22px;
     max-width:600px; line-height:1.7;
   }
-  #splash .quote .sm { color:var(--ink-dim); font-style:normal; font-size:11px; margin-top:6px; letter-spacing:0.04em; }
+  #splash .quote .sm { color:var(--ink-dim); font-style:normal; font-size:11px; margin-top:4px; letter-spacing:0.04em; }
   #splash button {
     background:var(--accent); color:#fff; border:none; padding:12px 30px;
     border-radius:4px; font-size:14px; font-weight:600; cursor:pointer;
@@ -612,7 +640,47 @@ HTML_TEMPLATE = r"""<!doctype html>
   }
   #splash button.alt { background:transparent; border:1px solid var(--line); color:var(--ink); }
   #splash button.gold { background:transparent; border:1px solid var(--gold); color:var(--gold); }
-  #splash .note { margin-top:30px; font-size:11px; color:var(--ink-dim); max-width:580px; line-height:1.7; }
+  #splash .note { margin-top:22px; font-size:11px; color:var(--ink-dim); max-width:620px; line-height:1.7; }
+  #splash .ways {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:10px; max-width:760px; margin:14px auto 24px;
+  }
+  #splash .way {
+    background:rgba(255,255,255,0.04); border:1px solid var(--line);
+    border-radius:6px; padding:10px 12px; cursor:pointer;
+    text-align:left; transition:border-color 0.18s, background 0.18s;
+  }
+  #splash .way:hover { border-color:var(--accent); background:rgba(217,83,79,0.08); }
+  #splash .way .num { color:var(--accent2); font-weight:700; font-size:11px; }
+  #splash .way .ttl { font-weight:700; font-size:14px; margin:2px 0 4px; color:var(--ink); }
+  #splash .way .desc { font-size:11px; color:var(--ink-dim); line-height:1.55; }
+
+  /* ===== Help overlay ===== */
+  #help-overlay {
+    position:absolute; inset:0; z-index:1900; background:rgba(0,0,0,0.6);
+    display:none; pointer-events:auto;
+  }
+  #help-overlay.show { display:block; }
+  #help-overlay .label {
+    position:absolute; background:var(--accent); color:#fff;
+    padding:6px 10px; border-radius:4px; font-size:11px; font-weight:600;
+    box-shadow:0 0 0 1px rgba(0,0,0,0.5);
+  }
+  #help-overlay .arrow {
+    position:absolute; font-size:18px; color:var(--accent2);
+  }
+  #help-overlay .close-help {
+    position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
+    background:var(--accent); color:#fff; border:none; padding:10px 28px;
+    border-radius:4px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  #help-btn {
+    position:absolute; top:170px; right:12px; z-index:1100;
+    background:var(--accent2); color:#000; border:none;
+    width:34px; height:34px; border-radius:50%; font-size:16px; font-weight:700;
+    cursor:pointer; box-shadow:0 0 0 2px rgba(0,0,0,0.4);
+  }
+  #help-btn:hover { background:#fff; }
 
   /* ===== Layer toggle ===== */
   #layers {
@@ -646,15 +714,96 @@ HTML_TEMPLATE = r"""<!doctype html>
   @keyframes fadein { from { opacity:0; transform:translate(-50%, 10px); } to { opacity:1; transform:translate(-50%, 0); } }
 
   @media (max-width: 900px) {
-    #side { width:280px; }
+    #side { width:300px; }
     #detail { width:90%; }
-    #timeline { left:280px; }
-    #legend { left:294px; }
+    #timeline { left:300px; }
+    #legend { left:314px; }
   }
+
+  /* ===== Mobile ===== */
   @media (max-width: 720px) {
-    #side { width:85%; }
-    #timeline { left:0; }
+    /* Top bar: compact, hide secondary stats */
+    #topbar { height:42px; padding:0 10px; gap:8px; }
+    #topbar .title { font-size:12px; }
+    #topbar .sub { display:none; }
+    #topbar .stats { gap:8px; font-size:10px; }
+    #topbar .stats span:nth-of-type(n+4) { display:none; }
+
+    /* Mode bar + source ribbon: shorter */
+    #modebar { top:42px; height:30px; padding:0 8px; gap:8px; font-size:11px; }
+    #modebar .chip { padding:2px 7px; font-size:10px; }
+    #source-ribbon { top:72px; height:26px; padding:0 8px; }
+    #source-ribbon .sb { padding:1px 6px; font-size:10px; }
+
+    /* Side panel becomes a slide-up drawer */
+    #side {
+      position:fixed; top:auto; left:0; right:0; bottom:0; width:100%;
+      max-height:65vh; height:auto;
+      transform:translateY(calc(100% - 44px));
+      transition:transform 0.3s ease;
+      border-right:none; border-top:2px solid var(--accent);
+      padding:6px 12px 14px;
+    }
+    #side.open { transform:translateY(0); }
+    #side::before {
+      content:'目次 ━━━ タップで展開'; display:block;
+      text-align:center; color:var(--accent2); font-size:11px;
+      padding:8px 0 6px; letter-spacing:0.08em; font-weight:700;
+      border-bottom:1px solid var(--line); margin-bottom:8px; cursor:pointer;
+    }
+    #side.open::before { content:'━━━ タップで閉じる'; }
+    #toc a { display:inline-block; margin:2px 6px 2px 0; }
+
+    /* Detail panel: full screen */
+    #detail {
+      position:fixed; inset:0; width:100%; max-width:none;
+      padding:14px 18px 20px;
+    }
+    #detail.open { transform:translateX(0); }
+
+    /* Timeline: full width, smaller cards */
+    #timeline { left:0; height:120px; }
+    #timeline-scroll { height:100px; padding:8px 10px; }
+    .evt { width:200px; padding:6px 8px; }
+    #era-ribbon { height:18px; font-size:9px; }
+
+    /* Legend hidden on mobile */
     #legend { display:none; }
+
+    /* Layers panel: bottom-right floating */
+    #layers { top:auto; bottom:130px; right:8px; padding:6px 8px; font-size:11px; }
+    #layers label { margin:2px 0; }
+    #help-btn { top:auto; bottom:172px; right:8px; }
+
+    /* Splash: smaller, single-column */
+    #splash { padding:14px; overflow-y:auto; align-items:flex-start; padding-top:30px; }
+    #splash h1 { font-size:22px; }
+    #splash .tag { font-size:11px; }
+    #splash .sub { font-size:12px; }
+    #splash .quote { font-size:13px; margin:6px 0 16px; }
+    #splash .ways { grid-template-columns:1fr; max-width:none; gap:8px; margin:6px 0 16px; }
+    #splash .way { padding:8px 10px; }
+    #splash button { padding:10px 22px; font-size:13px; margin:4px 4px 0; display:inline-block; }
+    #splash .note { font-size:10px; }
+
+    /* Marker pins easier to tap */
+    .pin { box-shadow:0 0 0 1px rgba(0,0,0,0.6), 0 0 4px rgba(0,0,0,0.6); }
+
+    /* Stat chart full width */
+    .stat-card svg { width:100% !important; height:auto; }
+
+    /* Mobile hamburger toggle */
+    #mobile-toggle {
+      position:fixed; bottom:138px; left:8px; z-index:1110;
+      background:var(--accent); color:#fff; border:none;
+      width:42px; height:42px; border-radius:50%;
+      font-size:16px; font-weight:700; cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);
+      display:flex; align-items:center; justify-content:center;
+    }
+  }
+  @media (min-width: 721px) {
+    #mobile-toggle { display:none; }
   }
 </style>
 </head>
@@ -664,22 +813,50 @@ HTML_TEMPLATE = r"""<!doctype html>
   <div class="tag">KOKURA UNDERWORLD MAP</div>
   <h1>小倉組織犯罪史タイムマシン</h1>
   <div class="sub">
-    工藤會を軸に、戦後闇市から頂上作戦・本部解体までの組織犯罪史を、<br>
-    公開報道・判決文・警察白書 + 報道書籍のゴシップ層を交えて 1 枚の地図に。
+    工藤會を軸に戦後闇市〜頂上作戦・本部解体までを、報道・判決・OFAC制裁・<br>
+    書籍・映像参照を横断する OSINT で 1 枚の地図に。
+    <br>
+    <span style="color:var(--accent2); font-size:11px;">
+      89 拠点 · 182 事件 · 102 軼話 · 241 出典 / 13 メディア種別
+    </span>
   </div>
   <div class="quote">
     「生涯後悔するぞ」<br>
-    <span class="sm">— 2021-08-24 一審判決言渡時の在廷発言と報じられた言葉</span>
+    <span class="sm">— 2021-08-24 一審 死刑判決言渡時の在廷発言と報じられた言葉</span>
   </div>
-  <div>
-    <button id="enter">地図を開く</button>
-    <button class="alt" id="enter-tour">系譜順に巡る</button>
-    <button class="gold" id="enter-gossip">ゴシップから入る</button>
+
+  <div class="ways">
+    <div class="way" data-way="hq">
+      <div class="num">▶ 1</div>
+      <div class="ttl">本部跡から始める</div>
+      <div class="desc">神岳1丁目に立っていた「金看板」と 2019年解体までの軌跡。最も濃いストーリー。</div>
+    </div>
+    <div class="way" data-way="tour-chron">
+      <div class="num">▶ 2</div>
+      <div class="ttl">系譜順に5幕で巡る</div>
+      <div class="desc">戦後闇市 → 高度成長 → 平成抗争 → 頂上作戦 → 解体後 の章バナー演出付き。</div>
+    </div>
+    <div class="way" data-way="tour-gossip">
+      <div class="num">▶ 3</div>
+      <div class="ttl">ゴシップ層を巡る</div>
+      <div class="desc">金看板撤去・草野闇市出自・道仁会抗争・最高裁上告 — 報道書籍の軼話だけで巡回。</div>
+    </div>
+    <div class="way" data-way="cases-4">
+      <div class="num">▶ 4</div>
+      <div class="ttl">市民襲撃4事件</div>
+      <div class="desc">1998漁協・2012元警官・2013看護師・2014歯科医師 — 頂上作戦の起訴対象。</div>
+    </div>
+    <div class="way" data-way="map-free">
+      <div class="num">▶ 5</div>
+      <div class="ttl">自由に地図を開く</div>
+      <div class="desc">89拠点ピンを自由探索。色分け切替・時代/派閥/出典フィルタで読み方を変える。</div>
+    </div>
   </div>
+
   <div class="note">
-    エンタメ寄りに振った OSINT 表示です。判決抜粋・公的記録は青系で、
-    報道ベースの軼話(ゴシップ層)は金縁カードで別格表示しています。
-    被害者の番地・氏名は載せていません。
+    エンタメ寄りに振った OSINT 表示です。<br>
+    判決・公的記録は青系、報道書籍の軼話(ゴシップ層)は金縁、海外メディアは緑系で色分け。<br>
+    被害者の番地・氏名は載せていません。座標は町丁目重心(公的建物は具体的座標)。
   </div>
 </div>
 
@@ -714,23 +891,50 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div>
 
 <div id="side">
-  <h2>組織系譜</h2>
-  <div id="chron-list"></div>
-  <h2>組織系統樹</h2>
-  <div id="org-tree" class="org-tree"></div>
-  <h2>主要人物(公開人物のみ)</h2>
-  <div id="person-list"></div>
-  <h2>主要訴訟</h2>
-  <div id="pros-list"></div>
-  <h2>ゴシップ層(派閥横断)</h2>
-  <div id="lore-list"></div>
-  <h2>推移チャート(警察白書ベース)</h2>
-  <div id="stat-charts"></div>
+  <div id="toc">
+    <div class="label">目次 — 各セクションへ</div>
+    <a data-jump="sec-chron">系譜</a><a data-jump="sec-tree">系統樹</a><a data-jump="sec-persons">人物</a><a data-jump="sec-pros">訴訟</a><a data-jump="sec-lore">ゴシップ</a><a data-jump="sec-charts">推移</a>
+  </div>
+  <h2 data-section="sec-chron">組織系譜</h2>
+  <div class="section-body" id="sec-chron"><div id="chron-list"></div></div>
+  <h2 data-section="sec-tree">組織系統樹</h2>
+  <div class="section-body" id="sec-tree"><div id="org-tree" class="org-tree"></div></div>
+  <h2 data-section="sec-persons">主要人物(公開人物のみ)</h2>
+  <div class="section-body" id="sec-persons"><div id="person-list"></div></div>
+  <h2 data-section="sec-pros" class="collapsed">主要訴訟</h2>
+  <div class="section-body" id="sec-pros"><div id="pros-list"></div></div>
+  <h2 data-section="sec-lore">ゴシップ層(派閥横断)</h2>
+  <div class="section-body" id="sec-lore"><div id="lore-list"></div></div>
+  <h2 data-section="sec-charts" class="collapsed">推移チャート(警察白書ベース)</h2>
+  <div class="section-body" id="sec-charts"><div id="stat-charts"></div></div>
 </div>
 
 <div id="layers">
   <label><input type="checkbox" id="toggle-poi"> 周辺 POI</label>
   <label><input type="checkbox" id="toggle-sat"> 衛星(現在)</label>
+</div>
+
+<button id="help-btn" title="使い方ガイド">?</button>
+<button id="mobile-toggle" title="目次・系譜を開く">☰</button>
+
+<div id="help-overlay">
+  <div class="label" style="top:60px; left:50%; transform:translateX(-50%); max-width:80%; text-align:center;">
+    ▲ 上部チップ: 色分けモード切替(種別/派閥/時代)+ 派閥フィルタ + 出典種別フィルタ
+  </div>
+  <div class="label" style="top:130px; left:16px; max-width:280px;">
+    ◀ 左サイド: 系譜・系統樹・人物・訴訟・ゴシップ・推移チャート(目次から飛べる)
+  </div>
+  <div class="label" style="bottom:170px; left:50%; transform:translateX(-50%); max-width:80%; text-align:center;">
+    ▼ 下部: 全182事件タイムライン(時代リボンで絞込・カードクリックで詳細へ)
+  </div>
+  <div class="label" style="top:180px; right:60px; max-width:240px;">
+    ▶ 右上ボタン: POI・衛星トグル・このヘルプ
+  </div>
+  <div class="label" style="top:260px; left:50%; transform:translateX(-50%); max-width:80%; text-align:center; background:var(--gold); color:#000;">
+    ピンをタップ → 「詳細を開く」で右パネルに展開
+    <br>(衛星タイムマシン・写真・判決抜粋・軼話・街のいま)
+  </div>
+  <button class="close-help" id="close-help">わかった</button>
 </div>
 
 <div id="legend"></div>
@@ -1297,7 +1501,7 @@ function renderStatChart(metric, pts) {
     `<circle class="dot" cx="${x(p.year).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="2"><title>${p.year}: ${p.value} ${p.unit || ''}</title></circle>`
   ).join('');
   const svg = `
-    <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
       ${grid}
       ${ticks}
       ${annots}
@@ -1445,19 +1649,95 @@ toggleSat.onchange = () => {
   }
 };
 
-// ===== Splash & tours =====
-document.getElementById('enter').onclick = () => {
-  document.getElementById('splash').style.display = 'none';
-};
-document.getElementById('enter-tour').onclick = () => {
-  document.getElementById('splash').style.display = 'none';
-  runChronTour();
-};
-document.getElementById('enter-gossip').onclick = () => {
-  document.getElementById('splash').style.display = 'none';
-  setMode('faction');
-  runGossipTour();
-};
+// ===== Splash entry — 5つの読み方 =====
+function closeSplash() { document.getElementById('splash').style.display = 'none'; }
+document.querySelectorAll('#splash .way').forEach(el => {
+  el.onclick = () => {
+    const way = el.dataset.way;
+    closeSplash();
+    if (way === 'hq') {
+      setTimeout(() => openDetail('kudokai_hq_kandake'), 100);
+    } else if (way === 'tour-chron') {
+      runChronTour();
+    } else if (way === 'tour-gossip') {
+      setMode('faction');
+      runGossipTour();
+    } else if (way === 'cases-4') {
+      runCases4Tour();
+    } else if (way === 'map-free') {
+      // just open the map, no auto detail
+    }
+  };
+});
+function runCases4Tour() {
+  const slugs = ['attack_1998_ashiya_fisheries', 'attack_2012_ex_officer',
+                 'attack_2013_nurse', 'attack_2014_dentist'];
+  showBanner('市民襲撃4事件 — 頂上作戦の起訴対象', 3000);
+  let i = 0;
+  function next() {
+    if (i >= slugs.length) return;
+    const rec = siteIndex[slugs[i++]];
+    if (rec) {
+      map.flyTo([rec.site.lat, rec.site.lon], 17, { duration: 1.5 });
+      setTimeout(() => openDetail(rec.site.slug), 1600);
+    }
+    setTimeout(next, 7000);
+  }
+  next();
+}
+
+// ===== TOC + section collapse =====
+document.querySelectorAll('#toc a[data-jump]').forEach(a => {
+  a.onclick = (e) => {
+    e.preventDefault();
+    const target = document.getElementById(a.dataset.jump);
+    if (target) {
+      target.previousElementSibling.classList.remove('collapsed');
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+});
+document.querySelectorAll('#side h2[data-section]').forEach(h => {
+  h.onclick = () => h.classList.toggle('collapsed');
+});
+
+// ===== Help overlay =====
+const helpEl = document.getElementById('help-overlay');
+document.getElementById('help-btn').onclick = () => helpEl.classList.add('show');
+document.getElementById('close-help').onclick = () => helpEl.classList.remove('show');
+helpEl.onclick = (e) => { if (e.target === helpEl) helpEl.classList.remove('show'); };
+
+// Show help once on first visit — after splash is dismissed
+function maybeShowFirstHelp() {
+  if (localStorage.getItem('kokura_seen_help')) return;
+  if (document.getElementById('splash').style.display === 'none') {
+    helpEl.classList.add('show');
+    localStorage.setItem('kokura_seen_help', '1');
+  }
+}
+const _origClose = closeSplash;
+closeSplash = function() { _origClose(); setTimeout(maybeShowFirstHelp, 500); };
+// Re-attach since we redefined
+document.querySelectorAll('#splash .way').forEach(el => {
+  const way = el.dataset.way;
+  el.onclick = () => {
+    closeSplash();
+    if (way === 'hq') setTimeout(() => openDetail('kudokai_hq_kandake'), 100);
+    else if (way === 'tour-chron') runChronTour();
+    else if (way === 'tour-gossip') { setMode('faction'); runGossipTour(); }
+    else if (way === 'cases-4') runCases4Tour();
+  };
+});
+
+// ===== Mobile side panel toggle =====
+const sideEl = document.getElementById('side');
+const mobileToggleEl = document.getElementById('mobile-toggle');
+function toggleSide() { sideEl.classList.toggle('open'); }
+mobileToggleEl.onclick = toggleSide;
+// Tap the header bar inside #side to toggle on mobile
+sideEl.addEventListener('click', (e) => {
+  if (e.target === sideEl) toggleSide(); // tap on the ::before zone
+});
 
 const banner = document.getElementById('tour-banner');
 function showBanner(text, dwell = 2500) {
