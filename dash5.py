@@ -2129,24 +2129,31 @@ ERA_ORDER.forEach(era => {
   mEras.appendChild(c);
 });
 
-// ===== Timeline 4-state toggle on mobile =====
-// Cycle: cards → exp → min → hidden → cards
-// "next" tap label tells the user what the NEXT state will reveal.
+// ===== Timeline 4-state toggle =====
+// Cycle: hidden → cards → exp → min → hidden
+// Mobile starts in 'hidden' (map gets the whole screen by default).
+// Desktop starts in 'cards'. Last choice is remembered in localStorage.
 const timelineEl = document.getElementById('timeline');
-const TL_STATES = ['cards', 'exp', 'min', 'hidden'];
+const TL_STATES = ['hidden', 'cards', 'exp', 'min'];
 const TL_LABELS = {
-  cards:  '▼ 詳しく',
-  exp:    '▼ 縮める',
-  min:    '▼ 完全に隠す',
   hidden: '▼ 年表を出す',
+  cards:  '▼ 詳しく',
+  exp:    '▲ 縮める',
+  min:    '▲ 完全に隠す',
 };
-let tlStateIdx = 0;  // start in 'cards'
+const TL_STORAGE_KEY = 'kokura_timeline_state_v2';
+const _isMobileForTl = window.matchMedia('(max-width: 720px)').matches;
+const _savedTl = localStorage.getItem(TL_STORAGE_KEY);
+let tlStateIdx = (_savedTl && TL_STATES.includes(_savedTl))
+  ? TL_STATES.indexOf(_savedTl)
+  : (_isMobileForTl ? 0 /* hidden */ : 1 /* cards */);
 function applyTimelineState() {
   const state = TL_STATES[tlStateIdx];
   document.body.classList.remove('timeline-cards', 'timeline-exp', 'timeline-min', 'timeline-hidden');
   document.body.classList.add('timeline-' + state);
   const tab = document.getElementById('timeline-expand-tab');
   if (tab) tab.textContent = TL_LABELS[state];
+  try { localStorage.setItem(TL_STORAGE_KEY, state); } catch (e) {}
 }
 document.getElementById('timeline-expand-tab')?.addEventListener('click', () => {
   tlStateIdx = (tlStateIdx + 1) % TL_STATES.length;
