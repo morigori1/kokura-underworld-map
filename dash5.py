@@ -1035,21 +1035,22 @@ HTML_TEMPLATE = r"""<!doctype html>
     /* Legend hidden on mobile */
     #legend { display:none; }
 
-    /* All floating controls move to the TOP zone (below timeline) so they
-       stay accessible regardless of bottom detail/side panel state. */
+    /* All floating controls stack on the RIGHT EDGE vertically.
+       Heights: help-btn 34px, layers ~42px → 8px gap between them. */
     #layers {
-      top:160px; bottom:auto; right:8px;
+      bottom:auto; right:8px;
       padding:5px 8px; font-size:10px;
       background:var(--panel); border:1px solid var(--line);
+      width:auto; max-width:120px;
     }
     #layers label { margin:1px 0; display:block; }
     #help-btn {
-      top:160px; bottom:auto; right:8px;
+      bottom:auto; right:8px;
       width:34px; height:34px; font-size:13px;
     }
-    /* Mobile FAB stack — TOP-LEFT below timeline, vertical column */
+    /* Mobile FAB stack — LEFT EDGE, doesn't conflict with right-edge stack */
     #mobile-fab-stack {
-      position:fixed; left:8px; top:160px; bottom:auto; z-index:1110;
+      position:fixed; left:8px; bottom:auto; z-index:1110;
       display:flex; flex-direction:column; gap:6px;
     }
     #mobile-fab-stack button {
@@ -1060,23 +1061,33 @@ HTML_TEMPLATE = r"""<!doctype html>
     }
     #fab-filter { background:var(--accent2); color:#000; }
     #fab-menu { background:var(--accent3); color:#fff; }
-    /* Floating buttons follow the timeline height */
-    body.timeline-hidden #mobile-fab-stack,
-    body.timeline-hidden #help-btn,
-    body.timeline-hidden #layers   { top:46px; }
-    body.timeline-min    #mobile-fab-stack,
-    body.timeline-min    #help-btn,
-    body.timeline-min    #layers   { top:72px; }
-    body.timeline-cards  #mobile-fab-stack,
-    body.timeline-cards  #help-btn,
-    body.timeline-cards  #layers   { top:160px; }
-    body.timeline-exp    #mobile-fab-stack,
-    body.timeline-exp    #help-btn,
-    body.timeline-exp    #layers   { top:220px; }
+    /* Vertical stack on the right edge — different `top` per timeline state.
+       In hidden state the tab pill sits at top:46 right:10 (~28px tall),
+       so help-btn starts below it at top:88; layers below help at top:130.
+       In other states, floating items sit below the tab that hangs ~22px
+       below the timeline. */
+    body.timeline-hidden #help-btn  { top:88px;  right:8px; }
+    body.timeline-hidden #layers    { top:130px; right:8px; }
+
+    /* min timeline height 22px → tab at ~62-84 → help below */
+    body.timeline-min    #help-btn  { top:92px;  right:8px; }
+    body.timeline-min    #layers    { top:134px; right:8px; }
+
+    /* cards timeline height 110px → tab at ~150-172 → help below */
+    body.timeline-cards  #help-btn  { top:180px; right:8px; }
+    body.timeline-cards  #layers    { top:222px; right:8px; }
+
+    /* exp timeline height 170px → tab at ~210-232 → help below */
+    body.timeline-exp    #help-btn  { top:240px; right:8px; }
+    body.timeline-exp    #layers    { top:282px; right:8px; }
+
+    /* FAB stack on the LEFT edge — synced with help-btn top per state */
+    body.timeline-hidden #mobile-fab-stack { top:88px;  }
+    body.timeline-min    #mobile-fab-stack { top:92px;  }
+    body.timeline-cards  #mobile-fab-stack { top:180px; }
+    body.timeline-exp    #mobile-fab-stack { top:240px; }
+
     #help-btn, #layers, #mobile-fab-stack { transition:top 0.25s ease; }
-    /* In hidden state, push help/layers further right so the reopen tab is free */
-    body.timeline-hidden #help-btn  { top:46px; right:88px; }
-    body.timeline-hidden #layers    { top:46px; right:130px; padding:4px 6px; }
 
     /* Splash: smaller, single-column */
     #splash { padding:14px; overflow-y:auto; align-items:flex-start; padding-top:30px; }
