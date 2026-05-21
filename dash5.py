@@ -738,12 +738,17 @@ HTML_TEMPLATE = r"""<!doctype html>
     /* Side panel becomes a slide-up drawer */
     #side {
       position:fixed; top:auto; left:0; right:0; bottom:0; width:100%;
-      max-height:65vh; height:auto;
+      max-height:65vh; height:65vh;
+      z-index:1060;
       transform:translateY(calc(100% - 44px));
       transition:transform 0.3s ease;
       border-right:none; border-top:2px solid var(--accent);
+      border-radius:14px 14px 0 0;
       padding:6px 12px 14px;
+      box-shadow:0 -6px 20px rgba(0,0,0,0.5);
     }
+    /* When side is open, hide the tiny tab text and show the actual content */
+    #detail { z-index:1100; }
     #side.open { transform:translateY(0); }
     #side::before {
       content:'目次 ━━━ タップで展開'; display:block;
@@ -754,12 +759,41 @@ HTML_TEMPLATE = r"""<!doctype html>
     #side.open::before { content:'━━━ タップで閉じる'; }
     #toc a { display:inline-block; margin:2px 6px 2px 0; }
 
-    /* Detail panel: full screen */
+    /* Detail panel: bottom sheet (65vh) — map stays visible at top */
     #detail {
-      position:fixed; inset:0; width:100%; max-width:none;
-      padding:14px 18px 20px;
+      position:fixed; top:auto; left:0; right:0; bottom:0;
+      width:100%; max-width:none;
+      height:65vh; max-height:65vh;
+      border-left:none; border-top:2px solid var(--accent);
+      border-radius:14px 14px 0 0;
+      padding:8px 16px 18px;
+      transform:translateY(100%);
+      transition:transform 0.32s ease;
+      box-shadow:0 -6px 20px rgba(0,0,0,0.5);
     }
-    #detail.open { transform:translateX(0); }
+    #detail.open { transform:translateY(0); }
+    /* Drag handle at top */
+    #detail::before {
+      content:''; display:block;
+      width:42px; height:4px; border-radius:2px;
+      background:var(--ink-dim); opacity:0.5;
+      margin:6px auto 8px;
+    }
+    /* Larger close button at top-right */
+    #detail .close {
+      position:absolute; top:6px; right:10px;
+      width:36px; height:36px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--accent); color:#fff;
+      border-radius:50%; font-size:18px; font-weight:700;
+      box-shadow:0 2px 6px rgba(0,0,0,0.5);
+      float:none; padding:0;
+    }
+    #detail .close:hover { color:#fff; background:var(--accent); }
+    #detail h2 { padding-right:50px; font-size:16px; }
+    #detail .image img { max-height:200px; object-fit:cover; }
+    #detail h3 { margin:14px 0 6px; }
+    #detail .narr p { font-size:12.5px; line-height:1.65; }
 
     /* Timeline: full width, smaller cards */
     #timeline { left:0; height:120px; }
@@ -770,10 +804,17 @@ HTML_TEMPLATE = r"""<!doctype html>
     /* Legend hidden on mobile */
     #legend { display:none; }
 
-    /* Layers panel: bottom-right floating */
-    #layers { top:auto; bottom:130px; right:8px; padding:6px 8px; font-size:11px; }
+    /* Right-side floating controls stack — clearly separated from timeline */
+    #layers {
+      top:auto; bottom:178px; right:8px;
+      padding:6px 10px; font-size:11px;
+      background:var(--panel); border:1px solid var(--line);
+    }
     #layers label { margin:2px 0; }
-    #help-btn { top:auto; bottom:172px; right:8px; }
+    #help-btn {
+      top:auto; bottom:138px; right:8px;
+      width:38px; height:38px; font-size:16px;
+    }
 
     /* Splash: smaller, single-column */
     #splash { padding:14px; overflow-y:auto; align-items:flex-start; padding-top:30px; }
@@ -792,19 +833,10 @@ HTML_TEMPLATE = r"""<!doctype html>
     /* Stat chart full width */
     .stat-card svg { width:100% !important; height:auto; }
 
-    /* Mobile hamburger toggle */
-    #mobile-toggle {
-      position:fixed; bottom:138px; left:8px; z-index:1110;
-      background:var(--accent); color:#fff; border:none;
-      width:42px; height:42px; border-radius:50%;
-      font-size:16px; font-weight:700; cursor:pointer;
-      box-shadow:0 2px 8px rgba(0,0,0,0.5);
-      display:flex; align-items:center; justify-content:center;
-    }
   }
-  @media (min-width: 721px) {
-    #mobile-toggle { display:none; }
-  }
+  /* The mobile-toggle button is replaced by the side-panel peek tab on
+     mobile (the "目次 ━━━ タップで展開" header). Hide the explicit button. */
+  #mobile-toggle { display:none !important; }
 </style>
 </head>
 <body>
@@ -1228,8 +1260,28 @@ function openDetail(slug) {
     applyFrame(0);
   }
 
+  // Close side panel if it's open (mobile, otherwise no-op)
+  document.getElementById('side').classList.remove('open');
+
   if (s.lat && s.lon) {
-    map.setView([s.lat, s.lon], Math.max(map.getZoom(), 16), { animate: true });
+    const isMobile = window.matchMedia('(max-width: 720px)').matches;
+    if (isMobile) {
+      // On mobile, detail covers bottom 65vh — shift map so marker is in
+      // the visible upper ~35vh band (i.e. center the marker about 1/5
+      // down from the top of the *full* viewport, not in the middle).
+      const targetZoom = Math.max(map.getZoom(), 16);
+      const targetPoint = map.project([s.lat, s.lon], targetZoom);
+      const vh = window.innerHeight;
+      // Shift down: we want the marker to appear ~vh*0.17 from the top
+      // (centered in the visible 35vh top band). Default centers it at vh*0.5.
+      // So offset Y by (vh*0.5 - vh*0.17) = vh*0.33 pixels downward in
+      // screen-space, which moves the *view* by the same in projected coords.
+      const adjusted = L.point(targetPoint.x, targetPoint.y + vh * 0.33);
+      const newCenter = map.unproject(adjusted, targetZoom);
+      map.setView(newCenter, targetZoom, { animate: true });
+    } else {
+      map.setView([s.lat, s.lon], Math.max(map.getZoom(), 16), { animate: true });
+    }
   }
 }
 
@@ -1237,6 +1289,12 @@ function closeDetail() {
   detailEl.classList.remove('open');
   if (waybackLayer) { map.removeLayer(waybackLayer); waybackLayer = null; }
 }
+// Tap on empty map (outside markers) closes the panels on mobile
+map.on('click', () => {
+  if (!window.matchMedia('(max-width: 720px)').matches) return;
+  detailEl.classList.remove('open');
+  document.getElementById('side').classList.remove('open');
+});
 window.openDetail = openDetail;
 window.closeDetail = closeDetail;
 
