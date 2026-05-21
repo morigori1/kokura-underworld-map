@@ -933,31 +933,43 @@ HTML_TEMPLATE = r"""<!doctype html>
     #detail h3 { margin:14px 0 6px; }
     #detail .narr p { font-size:12.5px; line-height:1.65; }
 
-    /* Timeline: TOP-mounted on mobile — below the topbar, above the map.
-       Always visible regardless of detail/side panels at the bottom. */
+    /* Timeline: TOP-mounted on mobile — 3 collapsible states.
+       min: era ribbon only (22px) — max map visibility
+       cards: era ribbon + card scroll (110px) — default
+       exp: cards + badges + full summary (170px) */
     #timeline {
       top:40px; bottom:auto; left:0; right:0;
-      height:110px; border-top:none; border-bottom:2px solid var(--accent);
+      border-top:none; border-bottom:2px solid var(--accent);
       transition:height 0.25s ease;
       z-index:1080;
+      height:110px;          /* default = cards */
     }
-    #timeline.expanded { height:170px; }
-    #timeline-scroll { height:88px; padding:6px 8px; transition:height 0.25s ease; }
-    #timeline.expanded #timeline-scroll { height:148px; padding:8px 10px; }
+    body.timeline-min #timeline { height:22px; }
+    body.timeline-cards #timeline { height:110px; }
+    body.timeline-exp #timeline { height:170px; }
+
+    #timeline-scroll { height:88px; padding:6px 8px; transition:height 0.25s ease, padding 0.25s ease; overflow-x:auto; overflow-y:hidden; }
+    body.timeline-min #timeline-scroll { height:0; padding:0; overflow:hidden; }
+    body.timeline-exp #timeline-scroll { height:148px; padding:8px 10px; }
+
     .evt { width:180px; padding:5px 8px; font-size:11px; }
-    #timeline.expanded .evt { width:220px; padding:6px 10px; font-size:12px; }
+    body.timeline-exp .evt { width:220px; padding:6px 10px; font-size:12px; }
     .evt .sm { -webkit-line-clamp:2; font-size:10.5px; }
-    #timeline.expanded .evt .sm { -webkit-line-clamp:3; font-size:11px; }
+    body.timeline-exp .evt .sm { -webkit-line-clamp:3; font-size:11px; }
     .evt .badges { display:none; }
-    #timeline.expanded .evt .badges { display:block; }
+    body.timeline-exp .evt .badges { display:block; }
+
     #era-ribbon { height:20px; font-size:10px; }
-    /* Expand tab sits at the BOTTOM of the top-mounted strip on mobile */
+    body.timeline-min #era-ribbon { height:18px; font-size:9px; }
+
+    /* Toggle tab: bottom-right of the top-mounted strip, always visible */
     #timeline-expand-tab {
       position:absolute; top:auto; bottom:-22px; right:10px;
       background:var(--accent); color:#fff;
       padding:4px 14px; border-radius:0 0 8px 8px;
       font-size:11px; font-weight:600; cursor:pointer;
       box-shadow:0 2px 4px rgba(0,0,0,0.3);
+      z-index:1; transition:bottom 0.25s ease;
     }
 
     /* Legend hidden on mobile */
@@ -988,14 +1000,16 @@ HTML_TEMPLATE = r"""<!doctype html>
     }
     #fab-filter { background:var(--accent2); color:#000; }
     #fab-menu { background:var(--accent3); color:#fff; }
-    /* When timeline is expanded the buttons need to be pushed down */
-    #timeline.expanded ~ #mobile-fab-stack { top:220px; }
-    #timeline.expanded ~ #help-btn { top:220px; }
-    #timeline.expanded ~ #layers { top:220px; }
-    /* But position selectors don't work cross-element easily — apply via body class instead */
-    body.timeline-expanded #mobile-fab-stack,
-    body.timeline-expanded #help-btn,
-    body.timeline-expanded #layers { top:220px; }
+    /* Floating buttons follow the timeline height */
+    body.timeline-min   #mobile-fab-stack,
+    body.timeline-min   #help-btn,
+    body.timeline-min   #layers   { top:72px; }
+    body.timeline-cards #mobile-fab-stack,
+    body.timeline-cards #help-btn,
+    body.timeline-cards #layers   { top:160px; }
+    body.timeline-exp   #mobile-fab-stack,
+    body.timeline-exp   #help-btn,
+    body.timeline-exp   #layers   { top:220px; }
     #help-btn, #layers, #mobile-fab-stack { transition:top 0.25s ease; }
 
     /* Splash: smaller, single-column */
@@ -2097,14 +2111,24 @@ ERA_ORDER.forEach(era => {
   mEras.appendChild(c);
 });
 
-// ===== Timeline expand on mobile =====
+// ===== Timeline 3-state toggle on mobile =====
+// Cycle: min(22px era ribbon only) → cards(110px default) → exp(170px badges) → min
 const timelineEl = document.getElementById('timeline');
-document.getElementById('timeline-expand-tab')?.addEventListener('click', () => {
-  timelineEl.classList.toggle('expanded');
-  document.body.classList.toggle('timeline-expanded', timelineEl.classList.contains('expanded'));
+const TL_STATES = ['min', 'cards', 'exp'];
+const TL_LABELS = { min: '▼ タイムライン', cards: '▼ もっと', exp: '▲ 閉じる' };
+let tlStateIdx = 1;  // start in 'cards'
+function applyTimelineState() {
+  const state = TL_STATES[tlStateIdx];
+  document.body.classList.remove('timeline-min', 'timeline-cards', 'timeline-exp');
+  document.body.classList.add('timeline-' + state);
   const tab = document.getElementById('timeline-expand-tab');
-  tab.textContent = timelineEl.classList.contains('expanded') ? '▼ 閉じる' : '▼ 詳しく';
+  if (tab) tab.textContent = TL_LABELS[state];
+}
+document.getElementById('timeline-expand-tab')?.addEventListener('click', () => {
+  tlStateIdx = (tlStateIdx + 1) % TL_STATES.length;
+  applyTimelineState();
 });
+applyTimelineState();
 
 // ===== Marker thinning at low zoom (mobile) =====
 // At zoom < 14 (wide view), show only HQ + major attack sites, not all 89 markers
