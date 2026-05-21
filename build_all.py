@@ -50,6 +50,7 @@ PHASES = [
     ('phase34_more_regions.py','北海道(札幌すすきの・函館・小樽)・東北(仙台国分町・福島連合)・四国(高松丸亀町・松山)・北陸(新潟古町・金沢片町)+ 震災復興と暴排'),
     ('phase35_kokura_facility.py','小倉(北九州市)各拠点の施設情報・解説段落を充実'),
     ('phase36_facility_nationwide.py','全国拠点(神戸・大阪・京都・名古屋・東京関東・広島・沖縄・北海道・東北・四国・北陸・久留米)の周辺施設情報を厚く補強'),
+    ('phase37_atmosphere.py','narration の無かった重要拠点 56 ヶ所に臨場感ある解説段落を追加'),
     ('dash5.py',               'render index.html'),
 ]
 
