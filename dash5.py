@@ -1231,12 +1231,12 @@ HTML_TEMPLATE = r"""<!doctype html>
 <button id="mobile-toggle" title="目次・系譜を開く">☰</button>
 
 <div id="mobile-fab-stack">
-  <button id="fab-tour" title="ツアー選択" style="background:#e74c3c; color:#fff;">🎬</button>
-  <button id="fab-filter" title="絞り込み・色分け">🔍</button>
-  <button id="fab-menu" title="目次・系譜・人物">☰</button>
-  <button id="fab-help" title="使い方ガイド" style="background:#f1c40f; color:#000;">?</button>
-  <button id="fab-poi" title="周辺POIを表示" style="background:#9aa6b2; color:#fff;">📍</button>
-  <button id="fab-sat" title="衛星画像に切替" style="background:#34495e; color:#fff;">🛰</button>
+  <button id="fab-tour"   type="button" onclick="fabTour()"   title="ツアー選択"     style="background:#e74c3c; color:#fff;">🎬</button>
+  <button id="fab-filter" type="button" onclick="fabFilter()" title="絞り込み・色分け" style="background:#f5b041; color:#000;">🔍</button>
+  <button id="fab-menu"   type="button" onclick="fabMenu()"   title="目次・系譜・人物" style="background:#3498db; color:#fff;">☰</button>
+  <button id="fab-help"   type="button" onclick="fabHelp()"   title="使い方ガイド"   style="background:#f1c40f; color:#000;">?</button>
+  <button id="fab-poi"    type="button" onclick="fabPoi()"    title="周辺POIを表示"  style="background:#9aa6b2; color:#fff;">📍</button>
+  <button id="fab-sat"    type="button" onclick="fabSat()"    title="衛星画像に切替" style="background:#34495e; color:#fff;">🛰</button>
 </div>
 
 <div id="filter-modal">
@@ -2368,6 +2368,39 @@ function cycleTimelineState() {
   applyTimelineState();
 }
 window.cycleTimelineState = cycleTimelineState;
+
+// ===== FAB button global handlers (called from inline onclick) =====
+// Defined here at the end of JS so all dependencies are in scope.
+window.fabTour = function() {
+  try { openTourMenu(); } catch (e) { console.error('fabTour:', e); }
+};
+window.fabFilter = function() {
+  try { openFilterModal(); } catch (e) { console.error('fabFilter:', e); }
+};
+window.fabMenu = function() {
+  try { toggleSide(); } catch (e) { console.error('fabMenu:', e); }
+};
+window.fabHelp = function() {
+  try { helpEl.classList.add('show'); } catch (e) { console.error('fabHelp:', e); }
+};
+window.fabPoi = function() {
+  try {
+    const cb = document.getElementById('toggle-poi');
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+    const btn = document.getElementById('fab-poi');
+    if (btn) btn.style.background = cb.checked ? '#d9534f' : '#9aa6b2';
+  } catch (e) { console.error('fabPoi:', e); }
+};
+window.fabSat = function() {
+  try {
+    const cb = document.getElementById('toggle-sat');
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+    const btn = document.getElementById('fab-sat');
+    if (btn) btn.style.background = cb.checked ? '#d9534f' : '#34495e';
+  } catch (e) { console.error('fabSat:', e); }
+};
 // Backup event listener (in case inline onclick is blocked)
 const _tabEl = document.getElementById('timeline-expand-tab');
 if (_tabEl) {
