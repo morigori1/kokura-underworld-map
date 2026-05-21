@@ -389,6 +389,52 @@ HTML_TEMPLATE = r"""<!doctype html>
   #topbar .stats { margin-left:auto; display:flex; gap:14px; font-size:12px; color:var(--ink-dim); }
   #topbar .stats b { color:var(--accent2); }
 
+  /* ===== Global search bar ===== */
+  #search-wrap {
+    position:relative; flex-shrink:0;
+  }
+  #search-input {
+    background:rgba(255,255,255,0.06); border:1px solid var(--line);
+    color:var(--ink); padding:6px 10px; border-radius:14px;
+    font-size:12px; outline:none; min-width:180px;
+    transition:border-color 0.2s, min-width 0.25s;
+  }
+  #search-input:focus { border-color:var(--accent2); min-width:260px; }
+  #search-input::placeholder { color:var(--ink-dim); }
+  #search-results {
+    position:absolute; top:100%; right:0; left:0; margin-top:4px;
+    max-height:60vh; overflow-y:auto;
+    background:var(--panel); border:1px solid var(--accent2); border-radius:6px;
+    padding:6px; z-index:1500;
+    display:none;
+    box-shadow:0 8px 20px rgba(0,0,0,0.5);
+    min-width:320px;
+  }
+  #search-results.show { display:block; }
+  #search-results .group {
+    color:var(--accent2); font-size:10px; letter-spacing:0.08em;
+    padding:6px 4px 2px; border-top:1px dashed var(--line); margin-top:4px;
+  }
+  #search-results .group:first-child { border-top:none; margin-top:0; }
+  #search-results .hit {
+    padding:6px 8px; border-radius:4px; cursor:pointer;
+    font-size:12px; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  #search-results .hit:hover { background:rgba(255,255,255,0.06); }
+  #search-results .hit .ico { width:18px; flex-shrink:0; text-align:center; }
+  #search-results .hit .lbl { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #search-results .hit .sub { color:var(--ink-dim); font-size:10px; flex-shrink:0; }
+  #search-results .empty { color:var(--ink-dim); padding:10px; text-align:center; font-size:11px; }
+  @media (max-width: 720px) {
+    #search-wrap { flex:1; }
+    #search-input { min-width:auto; width:100%; font-size:11px; padding:5px 8px; }
+    #search-input:focus { min-width:auto; }
+    #search-results { right:0; left:0; min-width:auto; }
+    /* On mobile, push search results to fill more of screen */
+    #search-results { position:fixed; top:42px; max-height:75vh; }
+  }
+
   /* ===== Color mode bar ===== */
   #modebar {
     position:absolute; top:50px; left:0; right:0; height:36px; z-index:1090;
@@ -1120,6 +1166,10 @@ HTML_TEMPLATE = r"""<!doctype html>
   <div>
     <div class="title">小倉組織犯罪史タイムマシン</div>
     <div class="sub">Kokura Underworld Map · OSINT + 軼話レイヤー</div>
+  </div>
+  <div id="search-wrap">
+    <input id="search-input" type="search" placeholder="🔍 拠点・事件・人物・ツアーを検索" autocomplete="off">
+    <div id="search-results"></div>
   </div>
   <div class="stats">
     <span>拠点 <b id="stat-sites">0</b></span>
@@ -2053,6 +2103,151 @@ function toggleSide() {
 document.getElementById('fab-menu')?.addEventListener('click', toggleSide);
 sideEl.addEventListener('click', (e) => {
   if (e.target === sideEl) toggleSide();
+});
+
+// ===== Global search =====
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+// Build search index once.
+const searchIndex = [];
+// Sites
+for (const s of DATA.sites) {
+  searchIndex.push({
+    type: 'site', ico: '📍', label: s.label, sub: s.kind || '',
+    extra: (s.notes || '') + ' ' + (s.place || ''),
+    onclick: () => openDetail(s.slug),
+  });
+}
+// Events
+for (const e of DATA.timeline) {
+  searchIndex.push({
+    type: 'event', ico: '⚡', label: e.title || e.kind, sub: e.date || '',
+    extra: (e.summary || '') + ' ' + (e.site_label || ''),
+    onclick: () => { if (e.site_slug) openDetail(e.site_slug); },
+  });
+}
+// Lore (highlight reel)
+for (const l of (DATA.floating_lore || [])) {
+  searchIndex.push({
+    type: 'lore', ico: '🟡', label: l.title || '', sub: l.year || '',
+    extra: l.body || '',
+    onclick: () => { if (l.site_slug) openDetail(l.site_slug); },
+  });
+}
+// Persons
+for (const p of (DATA.persons || [])) {
+  searchIndex.push({
+    type: 'person', ico: '👤', label: p.name || '', sub: p.role || '',
+    extra: (p.body || '') + ' ' + (p.name_kana || ''),
+    onclick: () => { if (p.site_slug) openDetail(p.site_slug); },
+  });
+}
+// Chronicle
+for (const c of (DATA.chronicle || [])) {
+  searchIndex.push({
+    type: 'chronicle', ico: '📜', label: c.title || '', sub: c.year || '',
+    extra: c.body || '',
+    onclick: () => {
+      // chronicle entry click handler in side panel — just open the matched site if any
+      const target = matchChronToSite(c);
+      if (target) openDetail(target);
+    },
+  });
+}
+// Tours
+for (const cat of TOUR_CATEGORIES) {
+  for (const t of cat.tours) {
+    searchIndex.push({
+      type: 'tour', ico: '🎬', label: t.title, sub: cat.name + ' / ' + t.steps.length + ' steps',
+      extra: t.desc || '',
+      onclick: () => startTour(t.steps),
+    });
+  }
+}
+
+const TYPE_LABEL = {
+  site: '拠点',
+  event: '事件',
+  lore: '軼話',
+  person: '人物',
+  chronicle: '系譜',
+  tour: 'ツアー',
+};
+
+function performSearch(q) {
+  q = (q || '').trim().toLowerCase();
+  if (!q) { searchResults.classList.remove('show'); return; }
+  const hits = [];
+  for (const item of searchIndex) {
+    const haystack = (item.label + ' ' + item.sub + ' ' + (item.extra || '')).toLowerCase();
+    if (haystack.includes(q)) {
+      // simple score: prefer label hits, then short distance
+      const labelHit = item.label.toLowerCase().includes(q);
+      hits.push({ ...item, _score: labelHit ? 1 : 2 });
+    }
+  }
+  hits.sort((a, b) => a._score - b._score);
+  // Group by type
+  const groups = {};
+  for (const h of hits) {
+    if (!groups[h.type]) groups[h.type] = [];
+    if (groups[h.type].length < 8) groups[h.type].push(h);  // cap per type
+  }
+  const html = [];
+  if (Object.keys(groups).length === 0) {
+    html.push(`<div class="empty">該当なし</div>`);
+  } else {
+    const order = ['site', 'event', 'lore', 'person', 'tour', 'chronicle'];
+    for (const t of order) {
+      if (!groups[t]) continue;
+      html.push(`<div class="group">${TYPE_LABEL[t]} (${groups[t].length})</div>`);
+      for (const h of groups[t]) {
+        html.push(
+          `<div class="hit" data-idx="${searchIndex.indexOf(h)}">` +
+            `<span class="ico">${h.ico}</span>` +
+            `<span class="lbl">${escapeHtml(h.label)}</span>` +
+            (h.sub ? `<span class="sub">${escapeHtml(h.sub)}</span>` : '') +
+          `</div>`
+        );
+      }
+    }
+  }
+  searchResults.innerHTML = html.join('\n');
+  searchResults.classList.add('show');
+  // Wire click handlers
+  searchResults.querySelectorAll('.hit').forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+    el.onclick = () => {
+      searchIndex[idx].onclick();
+      searchResults.classList.remove('show');
+      searchInput.value = '';
+      searchInput.blur();
+    };
+  });
+}
+
+let searchTimer = null;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => performSearch(searchInput.value), 100);
+});
+searchInput.addEventListener('focus', () => {
+  if (searchInput.value) performSearch(searchInput.value);
+});
+// Hide results when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#search-wrap')) {
+    searchResults.classList.remove('show');
+  }
+});
+// Esc closes
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    searchInput.value = '';
+    searchResults.classList.remove('show');
+    searchInput.blur();
+  }
 });
 
 // ===== Mobile filter modal =====

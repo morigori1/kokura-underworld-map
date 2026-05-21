@@ -46,6 +46,8 @@ PHASES = [
     ('phase29_specific_addresses.py','具体的住所・建物名・店舗名を notes に補強(被害者名は伏せたまま)'),
     ('phase30_persons_testimony_pros.py','人物・証言・訴訟を大幅拡充(persons 16→35, testimony 8→27, prosecutions 4→23)'),
     ('phase31_chronicle_orgs.py','chronicle 16→51, org_tree 16→43 に拡充'),
+    ('phase33_url_completion.py','source の outlet 名から公式ホームページ URL を補完 → phase8 が og:image 取得可能に'),
+    ('phase34_more_regions.py','北海道(札幌すすきの・函館・小樽)・東北(仙台国分町・福島連合)・四国(高松丸亀町・松山)・北陸(新潟古町・金沢片町)+ 震災復興と暴排'),
     ('dash5.py',               'render index.html'),
 ]
 
