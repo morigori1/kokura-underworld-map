@@ -933,24 +933,28 @@ HTML_TEMPLATE = r"""<!doctype html>
     #detail h3 { margin:14px 0 6px; }
     #detail .narr p { font-size:12.5px; line-height:1.65; }
 
-    /* Timeline: TOP-mounted on mobile — 3 collapsible states.
-       min: era ribbon only (22px) — max map visibility
-       cards: era ribbon + card scroll (110px) — default
-       exp: cards + badges + full summary (170px) */
+    /* Timeline: TOP-mounted on mobile — 4 collapsible states.
+       hidden: completely gone (0px) — only re-open tab visible
+       min:    era ribbon only (22px)
+       cards:  era ribbon + card scroll (110px) — default
+       exp:    cards + badges + full summary (170px) */
     #timeline {
       top:40px; bottom:auto; left:0; right:0;
       border-top:none; border-bottom:2px solid var(--accent);
-      transition:height 0.25s ease;
+      transition:height 0.25s ease, border-width 0.25s ease;
       z-index:1080;
-      height:110px;          /* default = cards */
+      height:110px;
+      overflow:visible;  /* let the expand-tab stick out below */
     }
-    body.timeline-min #timeline { height:22px; }
-    body.timeline-cards #timeline { height:110px; }
-    body.timeline-exp #timeline { height:170px; }
+    body.timeline-hidden #timeline { height:0; border-bottom-width:0; }
+    body.timeline-min    #timeline { height:22px; }
+    body.timeline-cards  #timeline { height:110px; }
+    body.timeline-exp    #timeline { height:170px; }
 
     #timeline-scroll { height:88px; padding:6px 8px; transition:height 0.25s ease, padding 0.25s ease; overflow-x:auto; overflow-y:hidden; }
-    body.timeline-min #timeline-scroll { height:0; padding:0; overflow:hidden; }
-    body.timeline-exp #timeline-scroll { height:148px; padding:8px 10px; }
+    body.timeline-hidden #timeline-scroll,
+    body.timeline-min    #timeline-scroll { height:0; padding:0; overflow:hidden; }
+    body.timeline-exp    #timeline-scroll { height:148px; padding:8px 10px; }
 
     .evt { width:180px; padding:5px 8px; font-size:11px; }
     body.timeline-exp .evt { width:220px; padding:6px 10px; font-size:12px; }
@@ -959,17 +963,25 @@ HTML_TEMPLATE = r"""<!doctype html>
     .evt .badges { display:none; }
     body.timeline-exp .evt .badges { display:block; }
 
-    #era-ribbon { height:20px; font-size:10px; }
+    #era-ribbon { height:20px; font-size:10px; transition:height 0.25s ease, opacity 0.25s ease; }
     body.timeline-min #era-ribbon { height:18px; font-size:9px; }
+    body.timeline-hidden #era-ribbon { height:0; opacity:0; overflow:hidden; }
 
-    /* Toggle tab: bottom-right of the top-mounted strip, always visible */
+    /* Toggle tab: sticks out from bottom of timeline.
+       In hidden mode, tab becomes a fixed-position floating button at top. */
     #timeline-expand-tab {
       position:absolute; top:auto; bottom:-22px; right:10px;
       background:var(--accent); color:#fff;
       padding:4px 14px; border-radius:0 0 8px 8px;
       font-size:11px; font-weight:600; cursor:pointer;
       box-shadow:0 2px 4px rgba(0,0,0,0.3);
-      z-index:1; transition:bottom 0.25s ease;
+      z-index:1090; transition:all 0.2s ease;
+    }
+    body.timeline-hidden #timeline-expand-tab {
+      position:fixed; top:46px; right:10px; bottom:auto;
+      border-radius:14px;
+      padding:5px 12px;
+      background:var(--accent2); color:#000;
     }
 
     /* Legend hidden on mobile */
@@ -1001,16 +1013,22 @@ HTML_TEMPLATE = r"""<!doctype html>
     #fab-filter { background:var(--accent2); color:#000; }
     #fab-menu { background:var(--accent3); color:#fff; }
     /* Floating buttons follow the timeline height */
-    body.timeline-min   #mobile-fab-stack,
-    body.timeline-min   #help-btn,
-    body.timeline-min   #layers   { top:72px; }
-    body.timeline-cards #mobile-fab-stack,
-    body.timeline-cards #help-btn,
-    body.timeline-cards #layers   { top:160px; }
-    body.timeline-exp   #mobile-fab-stack,
-    body.timeline-exp   #help-btn,
-    body.timeline-exp   #layers   { top:220px; }
+    body.timeline-hidden #mobile-fab-stack,
+    body.timeline-hidden #help-btn,
+    body.timeline-hidden #layers   { top:46px; }
+    body.timeline-min    #mobile-fab-stack,
+    body.timeline-min    #help-btn,
+    body.timeline-min    #layers   { top:72px; }
+    body.timeline-cards  #mobile-fab-stack,
+    body.timeline-cards  #help-btn,
+    body.timeline-cards  #layers   { top:160px; }
+    body.timeline-exp    #mobile-fab-stack,
+    body.timeline-exp    #help-btn,
+    body.timeline-exp    #layers   { top:220px; }
     #help-btn, #layers, #mobile-fab-stack { transition:top 0.25s ease; }
+    /* In hidden state, push help/layers further right so the reopen tab is free */
+    body.timeline-hidden #help-btn  { top:46px; right:88px; }
+    body.timeline-hidden #layers    { top:46px; right:130px; padding:4px 6px; }
 
     /* Splash: smaller, single-column */
     #splash { padding:14px; overflow-y:auto; align-items:flex-start; padding-top:30px; }
@@ -2111,15 +2129,21 @@ ERA_ORDER.forEach(era => {
   mEras.appendChild(c);
 });
 
-// ===== Timeline 3-state toggle on mobile =====
-// Cycle: min(22px era ribbon only) → cards(110px default) → exp(170px badges) → min
+// ===== Timeline 4-state toggle on mobile =====
+// Cycle: cards → exp → min → hidden → cards
+// "next" tap label tells the user what the NEXT state will reveal.
 const timelineEl = document.getElementById('timeline');
-const TL_STATES = ['min', 'cards', 'exp'];
-const TL_LABELS = { min: '▼ タイムライン', cards: '▼ もっと', exp: '▲ 閉じる' };
-let tlStateIdx = 1;  // start in 'cards'
+const TL_STATES = ['cards', 'exp', 'min', 'hidden'];
+const TL_LABELS = {
+  cards:  '▼ 詳しく',
+  exp:    '▼ 縮める',
+  min:    '▼ 完全に隠す',
+  hidden: '▼ 年表を出す',
+};
+let tlStateIdx = 0;  // start in 'cards'
 function applyTimelineState() {
   const state = TL_STATES[tlStateIdx];
-  document.body.classList.remove('timeline-min', 'timeline-cards', 'timeline-exp');
+  document.body.classList.remove('timeline-cards', 'timeline-exp', 'timeline-min', 'timeline-hidden');
   document.body.classList.add('timeline-' + state);
   const tab = document.getElementById('timeline-expand-tab');
   if (tab) tab.textContent = TL_LABELS[state];
