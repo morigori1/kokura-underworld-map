@@ -42,6 +42,7 @@ PHASES = [
     ('phase25_individual_cases.py', '報道で実名公開済の個別事案(海老蔵事件・ルフィ事件被告・各県強盗等)'),
     ('phase26_thematic.py',    '経済/政治/興行/スポーツ/薬物/戦後初期抗争のテーマ深掘り(神戸芸能社・児玉誉士夫・ロッキード・バブル地上げ・阪神大震災・黒い霧・大相撲野球賭博・覚せい剤戦後史)'),
     ('phase27_drug_tokuryu.py','薬物 + トクリュウ重点深掘り(ヒロポン戦後史・密輸ルート・ルフィ事件公判・SNSリクルーター・暗号資産マネロン・コンパウンド被害者保護)'),
+    ('phase28_tokuryu_neighborhoods.py','トクリュウ・半グレ拠点に周辺情報補填(narration + life_snippet, 現地の空気感)'),
     ('dash5.py',               'render index.html'),
 ]
 
