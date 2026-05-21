@@ -38,6 +38,8 @@ PHASES = [
     ('phase21_tokyo.py',       'Tokyo / Sumiyoshi-kai / Inagawa-kai + regulatory hubs (Diet, NPA, FSA)'),
     ('phase22_hiroshima.py',   'Hiroshima / Kyoseikai (広島抗争・仁義なき戦い・孤狼の血)'),
     ('phase23_hangure.py',     'Hangure / Tokuryu — 半グレ・準暴力団・トクリュウ(関東連合・ルフィ事件・連続強盗・闇バイト)'),
+    ('phase24_more_cases.py',  'Hangure/Tokuryu individual cases + 沖縄/京都/名古屋/大阪 regional sites'),
+    ('phase25_individual_cases.py', '報道で実名公開済の個別事案(海老蔵事件・ルフィ事件被告・各県強盗等)'),
     ('dash5.py',               'render index.html'),
 ]
 

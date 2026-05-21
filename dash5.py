@@ -720,6 +720,40 @@ HTML_TEMPLATE = r"""<!doctype html>
   #tour-banner.show { display:block; animation: fadein 0.6s; }
   @keyframes fadein { from { opacity:0; transform:translate(-50%, 10px); } to { opacity:1; transform:translate(-50%, 0); } }
 
+  /* ===== Tour playback controls ===== */
+  #tour-controls {
+    position:fixed; left:50%; transform:translateX(-50%);
+    top:130px;
+    background:rgba(13,15,18,0.94); border:1px solid var(--accent2);
+    border-radius:30px; padding:6px 8px;
+    z-index:1200;
+    display:none;
+    box-shadow:0 4px 14px rgba(0,0,0,0.6);
+  }
+  #tour-controls.show { display:flex; align-items:center; gap:4px; }
+  #tour-controls button {
+    width:36px; height:36px; border-radius:50%;
+    border:none; background:transparent; color:var(--ink);
+    font-size:14px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #tour-controls button:hover { background:rgba(255,255,255,0.1); }
+  #tour-controls .play-pause {
+    background:var(--accent); color:#fff; font-size:16px;
+  }
+  #tour-controls .stop { color:var(--ink-dim); }
+  #tour-controls .pos {
+    color:var(--ink-dim); font-size:11px; padding:0 8px; font-weight:600;
+  }
+  #tour-controls .label {
+    color:var(--accent2); font-size:11px; font-weight:600;
+    padding:0 8px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  @media (max-width: 720px) {
+    #tour-controls { top:auto; bottom:130px; transform:translateX(-50%); }
+    #tour-controls .label { display:none; }
+  }
+
   @media (max-width: 900px) {
     #side { width:300px; }
     #detail { width:90%; }
@@ -829,23 +863,24 @@ HTML_TEMPLATE = r"""<!doctype html>
     #detail h3 { margin:14px 0 6px; }
     #detail .narr p { font-size:12.5px; line-height:1.65; }
 
-    /* Timeline: compact 56px by default — date+title only. Tap expands. */
-    #timeline { left:0; height:56px; transition:height 0.25s ease; }
-    #timeline.expanded { height:140px; }
-    #timeline-scroll { height:36px; padding:4px 8px; transition:height 0.25s ease; }
-    #timeline.expanded #timeline-scroll { height:120px; padding:8px 10px; }
-    .evt { width:160px; padding:4px 8px; font-size:11px; }
-    #timeline.expanded .evt { width:200px; padding:6px 8px; font-size:12px; }
-    .evt .sm { display:none; }
-    #timeline.expanded .evt .sm { display:-webkit-box; }
+    /* Timeline: visible 110px by default — date+title+summary. Tap to expand to 160. */
+    #timeline { left:0; height:110px; transition:height 0.25s ease; }
+    #timeline.expanded { height:160px; }
+    #timeline-scroll { height:90px; padding:6px 8px; transition:height 0.25s ease; }
+    #timeline.expanded #timeline-scroll { height:140px; padding:8px 10px; }
+    .evt { width:180px; padding:5px 8px; font-size:11px; }
+    #timeline.expanded .evt { width:220px; padding:6px 10px; font-size:12px; }
+    .evt .sm { -webkit-line-clamp:2; font-size:10.5px; }
+    #timeline.expanded .evt .sm { -webkit-line-clamp:3; font-size:11px; }
     .evt .badges { display:none; }
     #timeline.expanded .evt .badges { display:block; }
-    #era-ribbon { height:18px; font-size:9px; }
+    #era-ribbon { height:20px; font-size:10px; }
     #timeline-expand-tab {
-      position:absolute; top:-22px; right:10px;
+      position:absolute; top:-24px; right:10px;
       background:var(--accent); color:#fff;
-      padding:3px 12px; border-radius:6px 6px 0 0;
+      padding:4px 14px; border-radius:8px 8px 0 0;
       font-size:11px; font-weight:600; cursor:pointer;
+      box-shadow:0 -1px 4px rgba(0,0,0,0.3);
     }
 
     /* Legend hidden on mobile */
@@ -1057,6 +1092,15 @@ HTML_TEMPLATE = r"""<!doctype html>
 
 <div id="legend"></div>
 <div id="tour-banner"></div>
+
+<div id="tour-controls">
+  <button class="prev" title="前へ">⏮</button>
+  <button class="play-pause" title="一時停止">⏸</button>
+  <button class="next" title="次へ">⏭</button>
+  <span class="pos" id="tour-pos">1 / 1</span>
+  <span class="label" id="tour-label"></span>
+  <button class="stop" title="ツアー終了">✕</button>
+</div>
 
 <div id="map"></div>
 
@@ -1814,22 +1858,7 @@ document.querySelectorAll('#splash .way').forEach(el => {
     }
   };
 });
-function runCases4Tour() {
-  const slugs = ['attack_1998_ashiya_fisheries', 'attack_2012_ex_officer',
-                 'attack_2013_nurse', 'attack_2014_dentist'];
-  showBanner('市民襲撃4事件 — 頂上作戦の起訴対象', 3000);
-  let i = 0;
-  function next() {
-    if (i >= slugs.length) return;
-    const rec = siteIndex[slugs[i++]];
-    if (rec) {
-      map.flyTo([rec.site.lat, rec.site.lon], 17, { duration: 1.5 });
-      setTimeout(() => openDetail(rec.site.slug), 1600);
-    }
-    setTimeout(next, 7000);
-  }
-  next();
-}
+// (runCases4Tour is now defined above with the tour engine)
 
 // ===== TOC + section collapse =====
 document.querySelectorAll('#toc a[data-jump]').forEach(a => {
@@ -2000,50 +2029,113 @@ function showBanner(text, dwell = 2500) {
   setTimeout(() => banner.classList.remove('show'), dwell);
 }
 
+// ===== Controllable tour engine =====
+// A "step" is a flat list of {slug, banner?}. We flatten chapter-based tours
+// into a single sequence so prev/next/pause work uniformly.
+const tour = {
+  steps: [],        // [{slug, banner?, label?}]
+  idx: 0,
+  paused: false,
+  timer: null,
+  stepDurationMs: 6500,
+};
+
+const tourCtrls = document.getElementById('tour-controls');
+const tourPlayBtn = tourCtrls.querySelector('.play-pause');
+const tourPrevBtn = tourCtrls.querySelector('.prev');
+const tourNextBtn = tourCtrls.querySelector('.next');
+const tourStopBtn = tourCtrls.querySelector('.stop');
+const tourPosEl = document.getElementById('tour-pos');
+const tourLabelEl = document.getElementById('tour-label');
+
+function tourClearTimer() { if (tour.timer) { clearTimeout(tour.timer); tour.timer = null; } }
+function tourShow() { tourCtrls.classList.add('show'); updateTourUI(); }
+function tourHide() {
+  tourClearTimer();
+  tour.steps = []; tour.idx = 0; tour.paused = false;
+  tourCtrls.classList.remove('show');
+}
+function updateTourUI() {
+  if (tour.steps.length === 0) return;
+  tourPosEl.textContent = `${tour.idx + 1} / ${tour.steps.length}`;
+  const step = tour.steps[tour.idx];
+  tourLabelEl.textContent = step.label || siteIndex[step.slug]?.site?.label || '';
+  tourPlayBtn.textContent = tour.paused ? '▶' : '⏸';
+  tourPlayBtn.title = tour.paused ? '再生' : '一時停止';
+}
+function tourGoTo(idx) {
+  tourClearTimer();
+  if (idx < 0 || idx >= tour.steps.length) { tourHide(); return; }
+  tour.idx = idx;
+  const step = tour.steps[idx];
+  if (step.banner) showBanner(step.banner, 3000);
+  const rec = siteIndex[step.slug];
+  if (rec) {
+    map.flyTo([rec.site.lat, rec.site.lon], 17, { duration: 1.6 });
+    setTimeout(() => openDetail(step.slug), 1700);
+  }
+  updateTourUI();
+  if (!tour.paused) {
+    tour.timer = setTimeout(() => {
+      if (tour.idx < tour.steps.length - 1) tourGoTo(tour.idx + 1);
+      else tourHide();
+    }, tour.stepDurationMs);
+  }
+}
+function startTour(steps) {
+  tourClearTimer();
+  tour.steps = steps;
+  tour.idx = 0;
+  tour.paused = false;
+  tourShow();
+  tourGoTo(0);
+}
+
+tourPlayBtn.onclick = () => {
+  tour.paused = !tour.paused;
+  if (tour.paused) tourClearTimer();
+  else { tour.timer = setTimeout(() => {
+    if (tour.idx < tour.steps.length - 1) tourGoTo(tour.idx + 1);
+    else tourHide();
+  }, tour.stepDurationMs); }
+  updateTourUI();
+};
+tourPrevBtn.onclick = () => { if (tour.idx > 0) tourGoTo(tour.idx - 1); };
+tourNextBtn.onclick = () => { if (tour.idx < tour.steps.length - 1) tourGoTo(tour.idx + 1); else tourHide(); };
+tourStopBtn.onclick = () => tourHide();
+
 function runChronTour() {
   const acts = [
-    { era: '戦後闇市', banner: '第1幕 ─ 戦後闇市の小倉(1947–)', slugs: ['kusano_ikka_origin_kokura', 'kudogumi_nakatsu_origin', 'uomachi_arcade'] },
+    { era: '戦後闇市', banner: '第1幕 ─ 戦後闇市の小倉(1947–)', slugs: ['kusano_ikka_origin_kokura', 'kudogumi_nakatsu_origin', 'uomachi_arcade', 'yawata_seitetsu_1901'] },
     { era: '高度成長', banner: '第2幕 ─ 神岳に本部が立つ(1980s)', slugs: ['yamaguchigumi_kyushu_entry', 'kudokai_hq_kandake', 'ogura_keisatsu'] },
     { era: '平成抗争', banner: '第3幕 ─ 市民への威迫(2000–2014)', slugs: ['heisei_shinten_chi', 'attack_1998_ashiya_fisheries', 'attack_2012_ex_officer', 'attack_2013_nurse', 'attack_2014_dentist', 'sakaimachi_quarter'] },
     { era: '頂上作戦', banner: '第4幕 ─ 頂上作戦と解体(2014–2021)', slugs: ['fukuoka_kenkei', 'kudokai_hq_kandake_signboard', 'kokura_district_court'] },
-    { era: '解体後',   banner: '第5幕 ─ その後の街(2022–)', slugs: ['tanga_market', 'sakaimachi_quarter'] },
+    { era: '解体後',   banner: '第5幕 ─ その後の街・トクリュウへ(2022–)', slugs: ['tanga_market', 'komae_robbery_2023', 'philippines_luffy_base'] },
   ];
-  let ai = 0, si = 0;
-  function next() {
-    if (ai >= acts.length) return;
-    const act = acts[ai];
-    if (si === 0) showBanner(act.banner, 3000);
-    const slug = act.slugs[si];
-    const rec = siteIndex[slug];
-    if (rec) {
-      map.flyTo([rec.site.lat, rec.site.lon], 17, { duration: 1.6 });
-      setTimeout(() => openDetail(slug), 1700);
-    }
-    si++;
-    if (si >= act.slugs.length) { ai++; si = 0; setTimeout(next, 5500); }
-    else setTimeout(next, 6500);
+  const steps = [];
+  for (const act of acts) {
+    act.slugs.forEach((slug, i) => {
+      steps.push({ slug, banner: i === 0 ? act.banner : null });
+    });
   }
-  next();
+  startTour(steps);
 }
 
 function runGossipTour() {
   const slugs = [
     'ogura_keisatsu', 'kudokai_hq_kandake_signboard', 'kusano_ikka_origin_kokura',
     'yamaguchigumi_kyushu_entry', 'kurume_dojinkai_hq', 'kokura_district_court',
-    'tanaka_gumi_offshoot',
+    'tanaka_gumi_offshoot', 'philippines_luffy_base', 'kanto_rengo_ob_network',
   ];
-  showBanner('🟡 ゴシップ層 ─ 報道書籍と軼話で巡る', 3000);
-  let i = 0;
-  function next() {
-    if (i >= slugs.length) return;
-    const rec = siteIndex[slugs[i++]];
-    if (rec) {
-      map.flyTo([rec.site.lat, rec.site.lon], 17, { duration: 1.5 });
-      setTimeout(() => openDetail(rec.site.slug), 1600);
-    }
-    setTimeout(next, 7000);
-  }
-  next();
+  const steps = slugs.map((s, i) => ({ slug: s, banner: i === 0 ? '🟡 ゴシップ層 ─ 報道書籍と軼話で巡る' : null }));
+  startTour(steps);
+}
+
+function runCases4Tour() {
+  const slugs = ['attack_1998_ashiya_fisheries', 'attack_2012_ex_officer',
+                 'attack_2013_nurse', 'attack_2014_dentist'];
+  const steps = slugs.map((s, i) => ({ slug: s, banner: i === 0 ? '市民襲撃4事件 — 頂上作戦の起訴対象' : null }));
+  startTour(steps);
 }
 </script>
 
