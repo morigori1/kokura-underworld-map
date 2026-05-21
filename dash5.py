@@ -398,6 +398,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     color:var(--ink); padding:6px 10px; border-radius:14px;
     font-size:12px; outline:none; min-width:180px;
     transition:border-color 0.2s, min-width 0.25s;
+    -webkit-appearance:none; appearance:none;
   }
   #search-input:focus { border-color:var(--accent2); min-width:260px; }
   #search-input::placeholder { color:var(--ink-dim); }
@@ -427,12 +428,25 @@ HTML_TEMPLATE = r"""<!doctype html>
   #search-results .hit .sub { color:var(--ink-dim); font-size:10px; flex-shrink:0; }
   #search-results .empty { color:var(--ink-dim); padding:10px; text-align:center; font-size:11px; }
   @media (max-width: 720px) {
-    #search-wrap { flex:1; }
-    #search-input { min-width:auto; width:100%; font-size:11px; padding:5px 8px; }
-    #search-input:focus { min-width:auto; }
-    #search-results { right:0; left:0; min-width:auto; }
-    /* On mobile, push search results to fill more of screen */
-    #search-results { position:fixed; top:42px; max-height:75vh; }
+    /* Search bar fills the whole topbar middle on mobile */
+    #search-wrap {
+      flex:1; min-width:0; max-width:none;
+      margin:0 4px;
+    }
+    #search-input {
+      min-width:0; width:100%; font-size:13px;
+      padding:7px 12px; border-radius:18px;
+      background:rgba(255,255,255,0.1);
+    }
+    #search-input:focus { min-width:0; width:100%; }
+    #search-results {
+      position:fixed; top:42px; left:0; right:0;
+      max-height:75vh; min-width:auto;
+      border-radius:0 0 8px 8px;
+    }
+    /* Title shrinks on mobile so search has room */
+    #topbar > div:first-child { display:none; }
+    #topbar .stats { display:none; }
   }
 
   /* ===== Color mode bar ===== */
@@ -1076,6 +1090,17 @@ HTML_TEMPLATE = r"""<!doctype html>
     /* FAB stack on LEFT edge — 6 buttons, smaller on mobile */
     #mobile-fab-stack button {
       width:38px; height:38px; font-size:16px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(255,255,255,0.4);
+      cursor:pointer;
+      transition: transform 0.12s, opacity 0.12s;
+    }
+    #mobile-fab-stack button:active {
+      transform: scale(0.88);
+      opacity: 0.8;
+    }
+    #timeline-expand-tab {
+      touch-action: manipulation;
     }
     body.timeline-hidden #mobile-fab-stack { top:94px;  }
     body.timeline-min    #mobile-fab-stack { top:96px;  }
@@ -1318,6 +1343,21 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div>
 
 <script>
+// ===== Runtime error visibility — show JS errors on screen for debugging =====
+window.addEventListener('error', function(e) {
+  console.error('Runtime error:', e.message, e.filename, e.lineno);
+  try {
+    let banner = document.getElementById('err-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'err-banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#d9534f;color:#fff;padding:8px;font-size:11px;z-index:99999;font-family:monospace;overflow:auto;max-height:30vh;';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = `[JS Error] ${e.message} @ ${(e.filename||'inline').split('/').pop()}:${e.lineno}`;
+  } catch (_) {}
+});
+
 const DATA = __PAYLOAD__;
 
 // ===== Timeline state — defined FIRST so it works even if later JS errors =====
