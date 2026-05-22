@@ -346,17 +346,43 @@ HTML_TEMPLATE = r"""<!doctype html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>小倉組織犯罪史タイムマシン — Kokura Underworld Map</title>
+<title>小倉組織犯罪史タイムマシン — Kokura Underworld Map | 戦後 80 年史 OSINT</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="工藤會を軸に戦後闇市から頂上作戦・本部解体・トクリュウまで、戦後 80 年の日本組織犯罪史を 227 拠点・382 事件・399 解説段落・231『街のいま』カードで可視化する OSINT インタラクティブ地図。報道書籍・判決文・警察白書・OFAC制裁・国会議事録を横断。">
+<meta name="keywords" content="工藤會, ヤクザ, 組織犯罪, 暴対法, 頂上作戦, 山口組, トクリュウ, 半グレ, 北九州, OSINT, Kudo-kai, Yakuza, Japanese organized crime">
+<meta name="author" content="Morigori">
+<meta name="theme-color" content="#d9534f">
+<link rel="canonical" href="https://morigori1.github.io/kokura-underworld-map/">
+
 <meta property="og:title" content="小倉組織犯罪史タイムマシン — Kokura Underworld Map">
-<meta property="og:description" content="工藤會を軸に戦後闇市〜頂上作戦・本部解体までの北九州組織犯罪史を、報道・判決・OFAC制裁・書籍・映像参照などを横断する OSINT 可視化(89拠点・182事件・241出典)">
+<meta property="og:description" content="工藤會を軸に戦後80年の日本組織犯罪史を OSINT 可視化。227拠点・382事件・399解説・231『街のいま』カード・28ツアー。報道書籍・判決文・警察白書・OFAC制裁・国会議事録を横断。">
 <meta property="og:url" content="https://morigori1.github.io/kokura-underworld-map/">
 <meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:site_name" content="Kokura Underworld Map">
 <meta property="og:image" content="https://morigori1.github.io/kokura-underworld-map/images/kudokai_hq_kandake_4.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="北九州市小倉北区神岳の工藤會本部跡 衛星画像">
+
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="小倉組織犯罪史タイムマシン">
-<meta name="twitter:description" content="工藤會を軸とする北九州組織犯罪史の OSINT 可視化(89拠点・182事件・241出典・13メディア種別)">
+<meta name="twitter:title" content="小倉組織犯罪史タイムマシン — 戦後80年史 OSINT">
+<meta name="twitter:description" content="工藤會 + 全国指定暴力団 + トクリュウ・半グレ。227拠点・382事件・231街のいま・28ツアーの OSINT インタラクティブ地図。">
 <meta name="twitter:image" content="https://morigori1.github.io/kokura-underworld-map/images/kudokai_hq_kandake_4.jpg">
+
+<!-- JSON-LD for search engines -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Kokura Underworld Map",
+  "alternateName": "小倉組織犯罪史タイムマシン",
+  "url": "https://morigori1.github.io/kokura-underworld-map/",
+  "description": "戦後 80 年の日本組織犯罪史を 227 拠点・382 事件で可視化する OSINT インタラクティブ地図",
+  "inLanguage": ["ja", "en"]
+}
+</script>
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <script src="vendor/leaflet/leaflet.js"></script>
 <style>
@@ -1459,7 +1485,108 @@ HTML_TEMPLATE = r"""<!doctype html>
     </div>
   </div>
 
+  <div class="row">
+    <div class="ico" style="background:#3498db; color:#fff;">📖</div>
+    <div class="tx">
+      <b>このプロジェクトについて</b><br>
+      編集ポリシー・出典・方法論・データ規模・謝辞は
+      <a href="#" id="open-about-from-help" style="color:var(--accent2);">About ページ</a> へ。
+    </div>
+  </div>
+
   <button class="close-help" id="close-help" type="button">わかった</button>
+</div>
+
+<!-- About / Methodology overlay -->
+<div id="about-overlay" style="position:fixed; inset:0; z-index:1950; background:rgba(8,9,11,0.97); display:none; overflow-y:auto; padding:30px 22px;">
+  <div style="max-width:760px; margin:0 auto; color:var(--ink);">
+    <h2 style="color:var(--accent2); font-size:22px; text-align:center; margin:0 0 6px;">
+      📖 このプロジェクトについて
+    </h2>
+    <p style="color:var(--ink-dim); font-size:11px; text-align:center; margin:0 0 24px;">
+      Kokura Underworld Map — 戦後 80 年の日本組織犯罪史を OSINT で可視化
+    </p>
+
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">プロジェクト概要</h3>
+    <p style="font-size:12.5px; line-height:1.7;">
+      工藤會(北九州市・特定危険指定暴力団)を中核に、戦後闇市から頂上作戦・本部解体・トクリュウ型犯罪まで、
+      日本の戦後組織犯罪史 80 年を地図と時系列で可視化するインタラクティブ OSINT プロジェクト。
+      姉妹プロジェクト <a href="https://compoundtimemachine.com" target="_blank" style="color:var(--accent2);">Compound Time Machine</a>
+      (メコン地域の詐欺コンパウンド衛星 OSINT)から派生。
+    </p>
+
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">データの規模</h3>
+    <ul style="font-size:12.5px; line-height:1.8;">
+      <li><b>227 拠点</b>(地図マーカー)</li>
+      <li><b>382 事件</b>(タイムラインカード)</li>
+      <li><b>399 解説段落</b>(narration / 100% カバー)</li>
+      <li><b>231『街のいま』カード</b>(life_snippet / 100% カバー)</li>
+      <li><b>206 軼話・ゴシップカード</b>(lore)</li>
+      <li><b>35 主要人物</b>・<b>27 証言</b>・<b>23 訴訟</b>・<b>51 系譜</b>・<b>43 組織系統樹エッジ</b></li>
+      <li><b>468 出典</b>(13 メディア種別)・<b>28 ガイドツアー</b>(7 カテゴリ)</li>
+    </ul>
+
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">出典・素材</h3>
+    <p style="font-size:12.5px; line-height:1.7;">
+      公開報道・判決文・警察白書・OFAC SDN リスト・国会議事録・関連書籍・映像参照・学術論文を横断。
+      具体的には西日本新聞・朝日新聞・毎日新聞・NHK・共同通信・Jake Adelstein(Tokyo Vice)・
+      Andrew Rankin(日本ヤクザ国際比較研究)・溝口敦・鈴木智彦・国正武重などの定常的取材を参照。
+      地図タイルは OpenStreetMap / Esri World Imagery。衛星タイムマシンは Esri Wayback。
+      POI は OpenStreetMap Overpass API。
+    </p>
+
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">編集ポリシー</h3>
+    <ul style="font-size:12.5px; line-height:1.7;">
+      <li><b>被害者の氏名・自宅番地は載せない</b>(町丁目どまり)</li>
+      <li><b>判決公開済の建物名・組事務所所在地・公的施設の住所は明示</b></li>
+      <li>公開報道・判決文・警察白書・OFAC SDN・国会議事録に限る</li>
+      <li>故人指導者・判決公開済被告・自著の著者・公的役職者のみ実名</li>
+      <li>現役組員の実名は載せない</li>
+    </ul>
+
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">methodology(構築手法)</h3>
+    <p style="font-size:12.5px; line-height:1.7;">
+      Python 3 + SQLite で正規化済みデータベース(<code>kokura.db</code>)を構築、
+      <code>dash5.py</code> が単一の HTML として埋め込みレンダリング(全データを JSON ペイロードで同梱)。
+      Leaflet 1.9.4(自己ホスト・CDN非依存)・OpenStreetMap・Esri Wayback を統合。
+      初期データ投入後は段階的フェーズスクリプト(<code>phase4-41</code>)で各層を拡充。
+      公開は GitHub Pages、ソースコードは MIT ライセンス。
+    </p>
+
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">免責・限界</h3>
+    <p style="font-size:12.5px; line-height:1.7;">
+      本マップは報道書籍・判決文ベースの二次資料整理であり、各記述の最新性・厳密な正確性は
+      個別の一次資料で都度ご確認ください。被害者・関係者への二次加害を避ける編集を意識していますが、
+      不適切な記述があれば <a href="https://github.com/morigori1/kokura-underworld-map/issues"
+      target="_blank" style="color:var(--accent2);">GitHub Issues</a> へお知らせください。
+    </p>
+
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">謝辞・連絡</h3>
+    <p style="font-size:12.5px; line-height:1.7;">
+      地元紙の地道な取材、関連書籍の長年の蓄積、警察・暴追運動センターの公開情報、
+      OpenStreetMap コミュニティに感謝します。
+      フィードバック・修正提案は GitHub Issues、コードへの貢献は Pull Request 歓迎。
+    </p>
+
+    <div style="text-align:center; margin:30px 0 10px;">
+      <a href="https://github.com/morigori1/kokura-underworld-map" target="_blank"
+         style="display:inline-block; background:var(--accent); color:#fff; padding:8px 20px;
+                border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;">
+        🔗 GitHub リポジトリ
+      </a>
+      <a href="https://compoundtimemachine.com" target="_blank"
+         style="display:inline-block; background:var(--accent2); color:#000; padding:8px 20px;
+                border-radius:4px; text-decoration:none; font-size:12px;">
+        🌏 姉妹プロジェクト Compound Time Machine
+      </a>
+    </div>
+
+    <button id="close-about" type="button" style="display:block; margin:20px auto 10px;
+            background:var(--accent); color:#fff; border:none; padding:12px 36px;
+            border-radius:4px; font-size:14px; font-weight:600; cursor:pointer;">
+      閉じる
+    </button>
+  </div>
 </div>
 
 <div id="legend"></div>
@@ -2319,9 +2446,25 @@ document.querySelectorAll('#side h2[data-section]').forEach(h => {
 
 // ===== Help overlay =====
 const helpEl = document.getElementById('help-overlay');
-document.getElementById('help-btn').onclick = () => helpEl.classList.add('show');
+const helpBtnEl = document.getElementById('help-btn');
+if (helpBtnEl) helpBtnEl.onclick = () => helpEl.classList.add('show');
 document.getElementById('close-help').onclick = () => helpEl.classList.remove('show');
 helpEl.onclick = (e) => { if (e.target === helpEl) helpEl.classList.remove('show'); };
+
+// About overlay
+const aboutEl = document.getElementById('about-overlay');
+function openAbout() { if (aboutEl) aboutEl.style.display = 'block'; }
+function closeAbout() { if (aboutEl) aboutEl.style.display = 'none'; }
+window.openAbout = openAbout; window.closeAbout = closeAbout;
+const closeAboutBtn = document.getElementById('close-about');
+if (closeAboutBtn) closeAboutBtn.onclick = closeAbout;
+if (aboutEl) aboutEl.onclick = (e) => { if (e.target === aboutEl) closeAbout(); };
+const openAboutLink = document.getElementById('open-about-from-help');
+if (openAboutLink) openAboutLink.onclick = (e) => {
+  e.preventDefault();
+  helpEl.classList.remove('show');
+  openAbout();
+};
 
 // Show help once on first visit — after splash is dismissed
 function maybeShowFirstHelp() {
