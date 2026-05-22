@@ -404,6 +404,13 @@ HTML_TEMPLATE = r"""<!doctype html>
   a { color:var(--accent3); }
 
   /* ===== Top bar ===== */
+  /* ===== Bilingual content switching ===== */
+  html[lang="ja"] [lang="en"] { display:none !important; }
+  html[lang="en"] [lang="ja"] { display:none !important; }
+  /* Inline two-language spans: show only matching lang */
+  html[lang="ja"] .i18n-en { display:none !important; }
+  html[lang="en"] .i18n-ja { display:none !important; }
+
   #topbar {
     position:absolute; top:0; left:0; right:0; height:50px; z-index:1100;
     background:linear-gradient(180deg, rgba(13,15,18,0.97), rgba(13,15,18,0.7));
@@ -1228,76 +1235,142 @@ HTML_TEMPLATE = r"""<!doctype html>
 
 <div id="splash">
   <div class="tag">KOKURA UNDERWORLD MAP</div>
-  <h1>小倉組織犯罪史タイムマシン</h1>
+  <h1>
+    <span class="i18n-ja">小倉組織犯罪史タイムマシン</span>
+    <span class="i18n-en">Kokura Underworld Map</span>
+  </h1>
   <div class="sub">
-    工藤會を軸に戦後闇市〜頂上作戦・本部解体までを、報道・判決・OFAC制裁・<br>
-    書籍・映像参照を横断する OSINT で 1 枚の地図に。
-    <br>
-    <span style="color:var(--accent2); font-size:11px;">
-      89 拠点 · 182 事件 · 102 軼話 · 241 出典 / 13 メディア種別
+    <span class="i18n-ja">
+      工藤會を軸に戦後闇市〜頂上作戦・本部解体までを、報道・判決・OFAC制裁・<br>
+      書籍・映像参照を横断する OSINT で 1 枚の地図に。<br>
+      <span style="color:var(--accent2); font-size:11px;">
+        227 拠点 · 382 事件 · 231 街のいま · 28 ツアー / 13 メディア種別
+      </span>
+    </span>
+    <span class="i18n-en">
+      80 years of Japanese organized crime — postwar black markets to the<br>
+      Kudo-kai dismantlement and Tokuryu era, mapped via news / rulings /<br>
+      OFAC sanctions / academic / film references.<br>
+      <span style="color:var(--accent2); font-size:11px;">
+        227 sites · 382 events · 231 "today" cards · 28 tours / 13 media kinds
+      </span>
     </span>
   </div>
   <div class="quote">
-    「生涯後悔するぞ」<br>
-    <span class="sm">— 2021-08-24 一審 死刑判決言渡時の在廷発言と報じられた言葉</span>
+    <span class="i18n-ja">「生涯後悔するぞ」<br>
+      <span class="sm">— 2021-08-24 一審 死刑判決言渡時の在廷発言と報じられた言葉</span>
+    </span>
+    <span class="i18n-en">"You'll regret this for the rest of your life"<br>
+      <span class="sm">— remark attributed to Nomura at the 2021-08-24 first-instance death sentence</span>
+    </span>
   </div>
 
   <div class="ways">
     <div class="way" data-way="hq">
       <div class="num">▶ 1</div>
-      <div class="ttl">本部跡から始める</div>
-      <div class="desc">神岳1丁目に立っていた「金看板」と 2019年解体までの軌跡。最も濃いストーリー。</div>
+      <div class="ttl">
+        <span class="i18n-ja">本部跡から始める</span>
+        <span class="i18n-en">Start at the HQ ruins</span>
+      </div>
+      <div class="desc">
+        <span class="i18n-ja">神岳1丁目に立っていた「金看板」と 2019年解体までの軌跡。最も濃いストーリー。</span>
+        <span class="i18n-en">The "golden sign" at Kandake 1-chome and the trajectory to its 2019 demolition. The densest narrative.</span>
+      </div>
     </div>
     <div class="way" data-way="tour-chron">
       <div class="num">▶ 2</div>
-      <div class="ttl">系譜順に5幕で巡る</div>
-      <div class="desc">戦後闇市 → 高度成長 → 平成抗争 → 頂上作戦 → 解体後 の章バナー演出付き。</div>
+      <div class="ttl">
+        <span class="i18n-ja">系譜順に5幕で巡る</span>
+        <span class="i18n-en">5-act chronological tour</span>
+      </div>
+      <div class="desc">
+        <span class="i18n-ja">戦後闇市 → 高度成長 → 平成抗争 → 頂上作戦 → 解体後 の章バナー演出付き。</span>
+        <span class="i18n-en">Postwar markets → High growth → Heisei warfare → Apex operation → Aftermath, with chapter banners.</span>
+      </div>
     </div>
     <div class="way" data-way="tour-gossip">
       <div class="num">▶ 3</div>
-      <div class="ttl">ゴシップ層を巡る</div>
-      <div class="desc">金看板撤去・草野闇市出自・道仁会抗争・最高裁上告 — 報道書籍の軼話だけで巡回。</div>
+      <div class="ttl">
+        <span class="i18n-ja">ゴシップ層を巡る</span>
+        <span class="i18n-en">Lore layer tour</span>
+      </div>
+      <div class="desc">
+        <span class="i18n-ja">金看板撤去・草野闇市出自・道仁会抗争・最高裁上告 — 報道書籍の軼話だけで巡回。</span>
+        <span class="i18n-en">Sign removal · Kusano's market origins · Dojinkai war · Supreme Court appeal — gossip-layer stops only.</span>
+      </div>
     </div>
     <div class="way" data-way="cases-4">
       <div class="num">▶ 4</div>
-      <div class="ttl">市民襲撃4事件</div>
-      <div class="desc">1998漁協・2012元警官・2013看護師・2014歯科医師 — 頂上作戦の起訴対象。</div>
+      <div class="ttl">
+        <span class="i18n-ja">市民襲撃4事件</span>
+        <span class="i18n-en">4 civilian attacks</span>
+      </div>
+      <div class="desc">
+        <span class="i18n-ja">1998漁協・2012元警官・2013看護師・2014歯科医師 — 頂上作戦の起訴対象。</span>
+        <span class="i18n-en">1998 fishery exec · 2012 ex-officer · 2013 nurse · 2014 dentist — the Apex Operation's indictments.</span>
+      </div>
     </div>
     <div class="way" data-way="tour-menu" style="border-color:#e74c3c;">
       <div class="num" style="color:#e74c3c;">🎬 5</div>
-      <div class="ttl">ツアー選択メニュー</div>
-      <div class="desc">16 種のガイドツアーを系統別(工藤會・九州抗争・山口組・半グレ・全国比較・カルチャー)から選ぶ。</div>
+      <div class="ttl">
+        <span class="i18n-ja">ツアー選択メニュー</span>
+        <span class="i18n-en">Tour selection menu</span>
+      </div>
+      <div class="desc">
+        <span class="i18n-ja">28 種のガイドツアーを系統別(工藤會・九州抗争・山口組・半グレ・全国比較・カルチャー)から選ぶ。</span>
+        <span class="i18n-en">Choose from 28 guided tours by lineage: Kudo-kai · Kyushu war · Yamaguchi-gumi · hangure · national comparison · culture.</span>
+      </div>
     </div>
     <div class="way" data-way="map-free">
       <div class="num">▶ 6</div>
-      <div class="ttl">自由に地図を開く</div>
-      <div class="desc">171 拠点ピンを自由探索。色分け切替・時代/派閥/出典フィルタで読み方を変える。</div>
+      <div class="ttl">
+        <span class="i18n-ja">自由に地図を開く</span>
+        <span class="i18n-en">Free-roam the map</span>
+      </div>
+      <div class="desc">
+        <span class="i18n-ja">227 拠点ピンを自由探索。色分け切替・時代/派閥/出典フィルタで読み方を変える。</span>
+        <span class="i18n-en">Explore 227 sites freely. Switch color modes; filter by era / faction / source type.</span>
+      </div>
     </div>
   </div>
 
   <div class="note">
-    エンタメ寄りに振った OSINT 表示です。<br>
-    判決・公的記録は青系、報道書籍の軼話(ゴシップ層)は金縁、海外メディアは緑系で色分け。<br>
-    被害者の番地・氏名は載せていません。座標は町丁目重心(公的建物は具体的座標)。
+    <span class="i18n-ja">
+      エンタメ寄りに振った OSINT 表示です。<br>
+      判決・公的記録は青系、報道書籍の軼話(ゴシップ層)は金縁、海外メディアは緑系で色分け。<br>
+      被害者の番地・氏名は載せていません。座標は町丁目重心(公的建物は具体的座標)。
+    </span>
+    <span class="i18n-en">
+      Editorially leans toward narrative OSINT. Court rulings and official records are blue;<br>
+      book-based lore is gold-bordered; foreign press is green-tinted.<br>
+      Victim names and street addresses are omitted. Coordinates are chome centroids
+      (public buildings use exact addresses).
+    </span>
   </div>
 </div>
 
 <div id="topbar">
   <div>
-    <div class="title">小倉組織犯罪史タイムマシン</div>
-    <div class="sub">Kokura Underworld Map · OSINT + 軼話レイヤー</div>
+    <div class="title">
+      <span class="i18n-ja">小倉組織犯罪史タイムマシン</span>
+      <span class="i18n-en">Kokura Underworld Map</span>
+    </div>
+    <div class="sub">
+      <span class="i18n-ja">Kokura Underworld Map · OSINT + 軼話レイヤー</span>
+      <span class="i18n-en">Japanese organized crime OSINT · 1945–present</span>
+    </div>
   </div>
   <div id="search-wrap">
-    <input id="search-input" type="search" placeholder="🔍 拠点・事件・人物・ツアーを検索" autocomplete="off">
+    <input id="search-input" type="search" placeholder="🔍 拠点・事件・人物・ツアーを検索 / Search sites, events, people, tours" autocomplete="off">
     <div id="search-results"></div>
   </div>
   <div class="stats">
-    <span>拠点 <b id="stat-sites">0</b></span>
-    <span>事件 <b id="stat-events">0</b></span>
-    <span>軼話 <b id="stat-lore">0</b></span>
-    <span>人物 <b id="stat-persons">0</b></span>
-    <span>系譜 <b id="stat-chron">0</b></span>
-    <span>出典 <b id="stat-src">0</b><small style="color:var(--ink-dim);">種類</small> / <b id="stat-src-total">0</b></span>
+    <span><span class="i18n-ja">拠点</span><span class="i18n-en">Sites</span> <b id="stat-sites">0</b></span>
+    <span><span class="i18n-ja">事件</span><span class="i18n-en">Events</span> <b id="stat-events">0</b></span>
+    <span><span class="i18n-ja">軼話</span><span class="i18n-en">Lore</span> <b id="stat-lore">0</b></span>
+    <span><span class="i18n-ja">人物</span><span class="i18n-en">People</span> <b id="stat-persons">0</b></span>
+    <span><span class="i18n-ja">系譜</span><span class="i18n-en">Timeline</span> <b id="stat-chron">0</b></span>
+    <span><span class="i18n-ja">出典</span><span class="i18n-en">Sources</span> <b id="stat-src">0</b><small style="color:var(--ink-dim);"><span class="i18n-ja">種類</span><span class="i18n-en">kinds</span></small> / <b id="stat-src-total">0</b></span>
   </div>
 </div>
 
@@ -1345,12 +1418,13 @@ HTML_TEMPLATE = r"""<!doctype html>
 <button id="mobile-toggle" title="目次・系譜を開く">☰</button>
 
 <div id="mobile-fab-stack">
-  <button id="fab-tour"   type="button" onclick="fabTour()"   title="ツアー選択"     style="background:#e74c3c; color:#fff;">🎬</button>
-  <button id="fab-filter" type="button" onclick="fabFilter()" title="絞り込み・色分け" style="background:#f5b041; color:#000;">🔍</button>
-  <button id="fab-menu"   type="button" onclick="fabMenu()"   title="目次・系譜・人物" style="background:#3498db; color:#fff;">☰</button>
-  <button id="fab-help"   type="button" onclick="fabHelp()"   title="使い方ガイド"   style="background:#f1c40f; color:#000;">?</button>
-  <button id="fab-poi"    type="button" onclick="fabPoi()"    title="周辺POIを表示"  style="background:#9aa6b2; color:#fff;">📍</button>
-  <button id="fab-sat"    type="button" onclick="fabSat()"    title="衛星画像に切替" style="background:#34495e; color:#fff;">🛰</button>
+  <button id="fab-tour"   type="button" onclick="fabTour()"   title="ツアー選択 / Tour menu"     style="background:#e74c3c; color:#fff;">🎬</button>
+  <button id="fab-filter" type="button" onclick="fabFilter()" title="絞り込み / Filters"         style="background:#f5b041; color:#000;">🔍</button>
+  <button id="fab-menu"   type="button" onclick="fabMenu()"   title="目次・系譜 / Index"         style="background:#3498db; color:#fff;">☰</button>
+  <button id="fab-help"   type="button" onclick="fabHelp()"   title="使い方 / Help"              style="background:#f1c40f; color:#000;">?</button>
+  <button id="fab-poi"    type="button" onclick="fabPoi()"    title="周辺POI / POI overlay"      style="background:#9aa6b2; color:#fff;">📍</button>
+  <button id="fab-sat"    type="button" onclick="fabSat()"    title="衛星 / Satellite"           style="background:#34495e; color:#fff;">🛰</button>
+  <button id="fab-lang"   type="button" onclick="fabLang()"   title="日本語 / English"           style="background:#27ae60; color:#fff; font-size:13px; font-weight:700;">JA</button>
 </div>
 
 <div id="filter-modal">
@@ -1631,6 +1705,33 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div>
 
 <script>
+// ===== Bilingual UI: ja / en switch via <html lang> + CSS =====
+(function() {
+  const KEY = 'kokura_lang';
+  function setLang(lang) {
+    document.documentElement.setAttribute('lang', lang);
+    try { localStorage.setItem(KEY, lang); } catch (e) {}
+    const btn = document.getElementById('fab-lang');
+    if (btn) btn.textContent = (lang === 'ja') ? 'EN' : 'JA';
+  }
+  // Initial language from URL ?lang= or localStorage or default ja
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  const saved = localStorage.getItem(KEY);
+  const init = (urlLang === 'en' || urlLang === 'ja') ? urlLang
+             : (saved === 'en' || saved === 'ja') ? saved
+             : 'ja';
+  document.documentElement.setAttribute('lang', init);
+  window.fabLang = function() {
+    const cur = document.documentElement.getAttribute('lang') || 'ja';
+    setLang(cur === 'ja' ? 'en' : 'ja');
+  };
+  // Set button label once DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('fab-lang');
+    if (btn) btn.textContent = (init === 'ja') ? 'EN' : 'JA';
+  });
+})();
+
 // ===== Runtime error visibility — show JS errors on screen for debugging =====
 window.addEventListener('error', function(e) {
   console.error('Runtime error:', e.message, e.filename, e.lineno);
