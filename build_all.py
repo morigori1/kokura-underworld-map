@@ -64,6 +64,7 @@ PHASES = [
     ('phase48_city_media.py','都市・区レベルの地元メディア大幅追加(396 都市/区エントリ・tier 階層導入で都市レベルを上位表示)'),
     ('phase49_kokura_emotion.py','小倉・北九州拠点に「情感」追加(音・匂い・季節・時間帯・住民感情)'),
     ('phase50_strip_dialect.py','誤った北九州弁引用(博多弁・筑後弁の混入)を削除/修正'),
+    ('phase51_neutralize_claims.py','地域固有性の過剰主張(○○特有の/世代記憶/うちの○○)を中立化'),
     ('dash5.py',               'render index.html'),
 ]
 
