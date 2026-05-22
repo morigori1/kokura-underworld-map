@@ -65,6 +65,7 @@ PHASES = [
     ('phase49_kokura_emotion.py','小倉・北九州拠点に「情感」追加(音・匂い・季節・時間帯・住民感情)'),
     ('phase50_strip_dialect.py','誤った北九州弁引用(博多弁・筑後弁の混入)を削除/修正'),
     ('phase51_neutralize_claims.py','地域固有性の過剰主張(○○特有の/世代記憶/うちの○○)を中立化'),
+    ('phase52_urls_and_chaos.py','主要事件の URL 補完(19 events に story-specific URL)+ 街のカオス情報追加(18 新規拠点: 焼きうどん発祥・門司焼きカレー・到津動物園・ギラヴァンツ・松本零士・北条司ほか)'),
     ('dash5.py',               'render index.html'),
 ]
 

@@ -561,6 +561,24 @@ SLUG_TO_CITYWARD_DETAIL = {
     'kurume_jr_station': '久留米市',
     'kurume_shrine_temple': '久留米市',
     'compare_namikawakai_hq': '久留米市',
+    # Phase 52 chaos sites — all in 北九州 specific 区
+    'yakiudon_origin': '北九州市小倉北区',
+    'moji_yaki_curry': '北九州市門司区',
+    'nukadakimoto': '北九州市小倉北区',
+    'giravanz_kitakyushu': '北九州市小倉北区',
+    'kitakyushu_medi_dome': '北九州市小倉北区',
+    'boatrace_wakamatsu': '北九州市若松区',
+    'kitakyushu_zoo': '北九州市小倉北区',
+    'kokura_jigon_drum': '北九州市小倉北区',
+    'tobata_giant_yamagasa': '北九州市戸畑区',
+    'yawata_matsuri': '北九州市八幡西区',
+    'takakura_ken_birthplace': '北九州市',  # 中間市は隣接、暫定で北九州扱い
+    'matsumoto_leiji_birthplace': '北九州市小倉北区',
+    'hojo_tsukasa_birthplace': '北九州市小倉北区',
+    'robert_akiyama_birthplace': '北九州市門司区',
+    'suzuki_kosuke_birthplace': '北九州市八幡西区',
+    'uomachi_chinese_chinatown': '北九州市小倉北区',
+    'kitakyushu_mahjong_culture': '北九州市',
 }
 
 
