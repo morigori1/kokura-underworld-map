@@ -57,6 +57,7 @@ PHASES = [
     ('phase41_life_complete.py','life_snippet 残り 68 拠点を補完 — 227/227 (100%) 達成'),
     ('phase42_real_urls.py','主要事件の source.url を WebSearch 確認済の実 URL に置換(28件 story-specific URL 化)'),
     ('phase43_fact_corrections.py','WebSearch 検証で判明した主要事実の修正(本部解体 2019-07→2019-11-22, OFAC 2023-02-23→2013-02-15, 旦過市場火災規模数値)'),
+    ('phase44_tokuryu_nationwide.py','トクリュウ全国分布拡充 — 25 新規拠点(2024-2025最新事案・全国分布・国際拠点)+ 多角的データ(34 narration + 25 life + 12 events + 22 sources 実 URL付)'),
     ('dash5.py',               'render index.html'),
 ]
 
