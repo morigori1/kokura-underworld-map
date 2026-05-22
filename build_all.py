@@ -55,6 +55,8 @@ PHASES = [
     ('phase39_life_lore.py','life_snippet(街のいま)を 30→76 件に拡張 — 72 拠点で「今そこに立った風景」'),
     ('phase40_life_extend.py','life_snippet を 76→163 件に拡張 — 159/227 (70%) 拠点でカバー'),
     ('phase41_life_complete.py','life_snippet 残り 68 拠点を補完 — 227/227 (100%) 達成'),
+    ('phase42_real_urls.py','主要事件の source.url を WebSearch 確認済の実 URL に置換(28件 story-specific URL 化)'),
+    ('phase43_fact_corrections.py','WebSearch 検証で判明した主要事実の修正(本部解体 2019-07→2019-11-22, OFAC 2023-02-23→2013-02-15, 旦過市場火災規模数値)'),
     ('dash5.py',               'render index.html'),
 ]
 
