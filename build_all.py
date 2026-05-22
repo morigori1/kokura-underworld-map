@@ -52,6 +52,7 @@ PHASES = [
     ('phase36_facility_nationwide.py','全国拠点(神戸・大阪・京都・名古屋・東京関東・広島・沖縄・北海道・東北・四国・北陸・久留米)の周辺施設情報を厚く補強'),
     ('phase37_atmosphere.py','narration の無かった重要拠点 56 ヶ所に臨場感ある解説段落を追加'),
     ('phase38_atmosphere2.py','残り 77 拠点 全てに narration 補完 — 227/227 (100%) カバー達成'),
+    ('phase39_life_lore.py','life_snippet(街のいま)を 30→76 件に拡張 — 72 拠点で「今そこに立った風景」'),
     ('dash5.py',               'render index.html'),
 ]
 
