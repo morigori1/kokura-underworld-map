@@ -53,6 +53,7 @@ PHASES = [
     ('phase37_atmosphere.py','narration の無かった重要拠点 56 ヶ所に臨場感ある解説段落を追加'),
     ('phase38_atmosphere2.py','残り 77 拠点 全てに narration 補完 — 227/227 (100%) カバー達成'),
     ('phase39_life_lore.py','life_snippet(街のいま)を 30→76 件に拡張 — 72 拠点で「今そこに立った風景」'),
+    ('phase40_life_extend.py','life_snippet を 76→163 件に拡張 — 159/227 (70%) 拠点でカバー'),
     ('dash5.py',               'render index.html'),
 ]
 
