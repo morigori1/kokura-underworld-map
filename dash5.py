@@ -1446,219 +1446,311 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div>
 
 <div id="help-overlay">
-  <h2>🗺️ 使い方ガイド</h2>
+  <h2>
+    <span class="i18n-ja">🗺️ 使い方ガイド</span>
+    <span class="i18n-en">🗺️ How to use</span>
+  </h2>
   <div class="sub">
-    227 拠点・382 事件・35 人物・28 ツアーを横断する OSINT 可視化。<br>
-    マーカー → 詳細パネル / ツアー → ガイド再生 / 検索 → 全層横断
+    <span class="i18n-ja">227 拠点・382 事件・35 人物・28 ツアーを横断する OSINT 可視化。<br>
+      マーカー → 詳細パネル / ツアー → ガイド再生 / 検索 → 全層横断</span>
+    <span class="i18n-en">OSINT visualization across 227 sites · 382 events · 35 people · 28 tours.<br>
+      Markers → detail panel / Tours → guided playback / Search → all layers.<br>
+      <i style="color:var(--ink-dim); font-size:11px;">Most data cards are in Japanese; use browser translate for individual cards.</i></span>
   </div>
 
   <div class="row">
     <div class="ico">🔍</div>
     <div class="tx">
-      <b>検索バー(画面上部)</b><br>
-      拠点・事件・人物・軼話・ツアーを横断検索。タップで即時ジャンプ。
-      「狛江」「ルフィ」「神岳」「OFAC」など何でも。
+      <span class="i18n-ja"><b>検索バー(画面上部)</b><br>
+        拠点・事件・人物・軼話・ツアーを横断検索。タップで即時ジャンプ。
+        「狛江」「ルフィ」「神岳」「OFAC」など何でも。</span>
+      <span class="i18n-en"><b>Search bar (top of screen)</b><br>
+        Cross-search across sites, events, people, lore, tours. Tap to jump directly.
+        Try "Komae" / "Luffy" / "Kandake" / "OFAC".</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico" style="background:#d9534f;">📍</div>
     <div class="tx">
-      <b>地図マーカー</b><br>
-      色で派閥・種別を表示。タップ → ポップアップ → 「詳細を開く」で
-      <b>下部パネル</b>に展開(写真・解説・事件・軼話・街のいま)。
+      <span class="i18n-ja"><b>地図マーカー</b><br>
+        色で派閥・種別を表示。タップ → ポップアップ → 「詳細を開く」で
+        <b>下部パネル</b>に展開(写真・解説・事件・軼話・街のいま)。</span>
+      <span class="i18n-en"><b>Map markers</b><br>
+        Colors show faction or kind. Tap → popup → "詳細を開く" opens the
+        <b>bottom sheet</b> with photos, explanations, events, lore, "today" cards.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico" style="background:#e74c3c;">🎬</div>
     <div class="tx">
-      <div class="platform">📱 左下 FAB</div>
-      <b>ツアー選択(🎬)</b><br>
-      28 ツアーを 7 カテゴリ別に整理(工藤會 / 九州抗争 / 山口組 /
-      半グレトクリュウ / 全国比較 / 歴史カルチャー / テーマ深掘り)。
-      再生中は ⏮ ⏸ ⏭ ✕ で操作。
+      <div class="platform">📱 FAB</div>
+      <span class="i18n-ja"><b>ツアー選択(🎬)</b><br>
+        28 ツアーを 7 カテゴリ別に整理(工藤會 / 九州抗争 / 山口組 /
+        半グレトクリュウ / 全国比較 / 歴史カルチャー / テーマ深掘り)。
+        再生中は ⏮ ⏸ ⏭ ✕ で操作。</span>
+      <span class="i18n-en"><b>Tour menu (🎬)</b><br>
+        28 tours in 7 categories (Kudo-kai / Kyushu war / Yamaguchi-gumi /
+        Hangure & Tokuryu / National comparison / Historical culture / Thematic deep-dive).
+        During playback: ⏮ ⏸ ⏭ ✕ controls.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico" style="background:#f5b041; color:#000;">🔍</div>
     <div class="tx">
-      <div class="platform">📱 左下 FAB</div>
-      <b>絞り込み(🔍)</b><br>
-      色分けモード(種別 / 派閥 / 時代)・派閥フィルタ・出典種別フィルタ・
-      時代フィルタを一括設定するモーダル。
+      <div class="platform">📱 FAB</div>
+      <span class="i18n-ja"><b>絞り込み(🔍)</b><br>
+        色分けモード(種別 / 派閥 / 時代)・派閥フィルタ・出典種別フィルタ・
+        時代フィルタを一括設定するモーダル。</span>
+      <span class="i18n-en"><b>Filters (🔍)</b><br>
+        Color mode (kind / faction / era), faction filter, source-type filter,
+        era filter — all in one modal.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico" style="background:#3498db;">☰</div>
     <div class="tx">
-      <div class="platform">📱 左下 FAB</div>
-      <b>目次(☰)</b><br>
-      組織系譜・組織系統樹・主要人物・主要訴訟・ゴシップ層・
-      警察白書ベース推移チャートを下部パネルで表示。
+      <div class="platform">📱 FAB</div>
+      <span class="i18n-ja"><b>目次(☰)</b><br>
+        組織系譜・組織系統樹・主要人物・主要訴訟・ゴシップ層・
+        警察白書ベース推移チャートを下部パネルで表示。</span>
+      <span class="i18n-en"><b>Index (☰)</b><br>
+        Chronicle, org-tree, key people, prosecutions, lore highlights, and
+        crime-stat trend charts (NPA white-paper based) in the side panel.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico" style="background:#9aa6b2;">📍</div>
     <div class="tx">
-      <div class="platform">📱 左下 FAB</div>
-      <b>周辺POI(📍)</b><br>
-      主要拠点周辺の OSM 地物(警察署・市役所・学校・寺社など)を
-      地図上に表示/非表示。ON 時は赤色に変化。
+      <div class="platform">📱 FAB</div>
+      <span class="i18n-ja"><b>周辺POI(📍)</b><br>
+        主要拠点周辺の OSM 地物(警察署・市役所・学校・寺社など)を
+        地図上に表示/非表示。ON 時は赤色に変化。</span>
+      <span class="i18n-en"><b>POI overlay (📍)</b><br>
+        Toggle nearby OpenStreetMap POIs (police stations, city halls, schools,
+        shrines) around key sites. Red when ON.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico" style="background:#34495e;">🛰</div>
     <div class="tx">
-      <div class="platform">📱 左下 FAB</div>
-      <b>衛星画像(🛰)</b><br>
-      Esri World Imagery の衛星写真に切替。本部跡などは詳細パネルの
-      「衛星タイムマシン」で過去フレーム(Wayback)も見られる。
+      <div class="platform">📱 FAB</div>
+      <span class="i18n-ja"><b>衛星画像(🛰)</b><br>
+        Esri World Imagery の衛星写真に切替。本部跡などは詳細パネルの
+        「衛星タイムマシン」で過去フレーム(Wayback)も見られる。</span>
+      <span class="i18n-en"><b>Satellite (🛰)</b><br>
+        Switch to Esri World Imagery satellite tiles. For HQ ruins and similar,
+        the detail panel's "Satellite Time Machine" also shows Wayback historical frames.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico" style="background:var(--accent2); color:#000;">▼</div>
     <div class="tx">
-      <div class="platform">📱 右上</div>
-      <b>時系列タイムライン折りたたみ(▼/▲)</b><br>
-      タップで 4 段階循環: hidden(0)→ cards(110px)→ exp(170px)→ min(22px)。
-      最後の選択は localStorage に保存。
+      <div class="platform">📱</div>
+      <span class="i18n-ja"><b>時系列タイムライン折りたたみ(▼/▲)</b><br>
+        タップで 4 段階循環: hidden(0)→ cards(110px)→ exp(170px)→ min(22px)。
+        最後の選択は localStorage に保存。</span>
+      <span class="i18n-en"><b>Timeline fold toggle (▼/▲)</b><br>
+        Tap to cycle 4 states: hidden(0) → cards(110px) → exp(170px) → min(22px).
+        Choice persists in localStorage.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico">🎬</div>
     <div class="tx">
-      <b>ツアー中の操作</b><br>
-      画面上部に <b>⏮ / ⏸ / ⏭ / 1/N / ✕</b> のコントロールバーが出現。
-      一時停止して読み込み、好きなだけ滞在してから次へ。
+      <span class="i18n-ja"><b>ツアー中の操作</b><br>
+        画面上部に <b>⏮ / ⏸ / ⏭ / 1/N / ✕</b> のコントロールバーが出現。
+        一時停止して読み込み、好きなだけ滞在してから次へ。</span>
+      <span class="i18n-en"><b>Tour playback controls</b><br>
+        While a tour plays, a <b>⏮ / ⏸ / ⏭ / 1/N / ✕</b> bar appears at the top.
+        Pause to read in depth, stay as long as you like, then continue.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico">🟡</div>
     <div class="tx">
-      <b>軼話カード(金縁)</b><br>
-      報道書籍ベースのゴシップ層。判決抜粋(青系)・公的記録とは
-      別格表示。★1〜5 の spice レベルで重要度。
+      <span class="i18n-ja"><b>軼話カード(金縁)</b><br>
+        報道書籍ベースのゴシップ層。判決抜粋(青系)・公的記録とは
+        別格表示。★1〜5 の spice レベルで重要度。</span>
+      <span class="i18n-en"><b>Lore cards (gold border)</b><br>
+        Book-based gossip layer, visually distinct from court excerpts (blue) and
+        official records. ★1–5 spice level marks salience.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico">⚖️</div>
     <div class="tx">
-      <b>編集ポリシー</b><br>
-      被害者の氏名・自宅番地は載せない。
-      判決公開済の建物名・組織所在地・公的施設の住所は明示。
-      公開報道・判決文・警察白書・OFAC SDN・国会議事録に限る。
+      <span class="i18n-ja"><b>編集ポリシー</b><br>
+        被害者の氏名・自宅番地は載せない。
+        判決公開済の建物名・組織所在地・公的施設の住所は明示。
+        公開報道・判決文・警察白書・OFAC SDN・国会議事録に限る。</span>
+      <span class="i18n-en"><b>Editorial policy</b><br>
+        Victim names and street addresses are omitted. Building names, gang office
+        addresses, and public facility addresses already disclosed in rulings or
+        reporting are shown. Sourced only from public reporting, court rulings,
+        NPA white papers, OFAC SDN, and Diet records.</span>
     </div>
   </div>
 
   <div class="row">
     <div class="ico" style="background:#3498db; color:#fff;">📖</div>
     <div class="tx">
-      <b>このプロジェクトについて</b><br>
-      編集ポリシー・出典・方法論・データ規模・謝辞は
-      <a href="#" id="open-about-from-help" style="color:var(--accent2);">About ページ</a> へ。
+      <span class="i18n-ja"><b>このプロジェクトについて</b><br>
+        編集ポリシー・出典・方法論・データ規模・謝辞は
+        <a href="#" id="open-about-from-help" style="color:var(--accent2);">About ページ</a> へ。</span>
+      <span class="i18n-en"><b>About this project</b><br>
+        Editorial policy, sources, methodology, data scale, acknowledgements:
+        <a href="#" id="open-about-from-help-en" style="color:var(--accent2);">About page</a>.</span>
     </div>
   </div>
 
-  <button class="close-help" id="close-help" type="button">わかった</button>
+  <button class="close-help" id="close-help" type="button">
+    <span class="i18n-ja">わかった</span>
+    <span class="i18n-en">Got it</span>
+  </button>
 </div>
 
 <!-- About / Methodology overlay -->
 <div id="about-overlay" style="position:fixed; inset:0; z-index:1950; background:rgba(8,9,11,0.97); display:none; overflow-y:auto; padding:30px 22px;">
   <div style="max-width:760px; margin:0 auto; color:var(--ink);">
     <h2 style="color:var(--accent2); font-size:22px; text-align:center; margin:0 0 6px;">
-      📖 このプロジェクトについて
+      <span class="i18n-ja">📖 このプロジェクトについて</span>
+      <span class="i18n-en">📖 About this project</span>
     </h2>
     <p style="color:var(--ink-dim); font-size:11px; text-align:center; margin:0 0 24px;">
-      Kokura Underworld Map — 戦後 80 年の日本組織犯罪史を OSINT で可視化
+      <span class="i18n-ja">Kokura Underworld Map — 戦後 80 年の日本組織犯罪史を OSINT で可視化</span>
+      <span class="i18n-en">Kokura Underworld Map — OSINT visualization of 80 years of Japanese organized crime</span>
     </p>
 
-    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">プロジェクト概要</h3>
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">
+      <span class="i18n-ja">プロジェクト概要</span><span class="i18n-en">Overview</span>
+    </h3>
     <p style="font-size:12.5px; line-height:1.7;">
-      工藤會(北九州市・特定危険指定暴力団)を中核に、戦後闇市から頂上作戦・本部解体・トクリュウ型犯罪まで、
-      日本の戦後組織犯罪史 80 年を地図と時系列で可視化するインタラクティブ OSINT プロジェクト。
-      姉妹プロジェクト <a href="https://compoundtimemachine.com" target="_blank" style="color:var(--accent2);">Compound Time Machine</a>
-      (メコン地域の詐欺コンパウンド衛星 OSINT)から派生。
+      <span class="i18n-ja">工藤會(北九州市・特定危険指定暴力団)を中核に、戦後闇市から頂上作戦・本部解体・トクリュウ型犯罪まで、
+        日本の戦後組織犯罪史 80 年を地図と時系列で可視化するインタラクティブ OSINT プロジェクト。
+        姉妹プロジェクト <a href="https://compoundtimemachine.com" target="_blank" style="color:var(--accent2);">Compound Time Machine</a>
+        (メコン地域の詐欺コンパウンド衛星 OSINT)から派生。</span>
+      <span class="i18n-en">An interactive OSINT visualization of 80 years of Japanese organized-crime history,
+        centered on the Kudo-kai (Kitakyushu's "specifically dangerous" designated criminal organization).
+        Spans postwar black markets → high-growth → Heisei warfare → Apex Operation → HQ dismantlement → Tokuryu.
+        Spun off from the sister project
+        <a href="https://compoundtimemachine.com" target="_blank" style="color:var(--accent2);">Compound Time Machine</a>
+        (satellite OSINT of Mekong-region scam compounds).</span>
     </p>
 
-    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">データの規模</h3>
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">
+      <span class="i18n-ja">データの規模</span><span class="i18n-en">Data scale</span>
+    </h3>
     <ul style="font-size:12.5px; line-height:1.8;">
-      <li><b>227 拠点</b>(地図マーカー)</li>
-      <li><b>382 事件</b>(タイムラインカード)</li>
-      <li><b>399 解説段落</b>(narration / 100% カバー)</li>
-      <li><b>231『街のいま』カード</b>(life_snippet / 100% カバー)</li>
-      <li><b>206 軼話・ゴシップカード</b>(lore)</li>
-      <li><b>35 主要人物</b>・<b>27 証言</b>・<b>23 訴訟</b>・<b>51 系譜</b>・<b>43 組織系統樹エッジ</b></li>
-      <li><b>468 出典</b>(13 メディア種別)・<b>28 ガイドツアー</b>(7 カテゴリ)</li>
+      <li><span class="i18n-ja"><b>227 拠点</b>(地図マーカー)</span><span class="i18n-en"><b>227 sites</b> (map markers)</span></li>
+      <li><span class="i18n-ja"><b>382 事件</b>(タイムラインカード)</span><span class="i18n-en"><b>382 events</b> (timeline cards)</span></li>
+      <li><span class="i18n-ja"><b>399 解説段落</b>(narration / 100% カバー)</span><span class="i18n-en"><b>399 narration paragraphs</b> (100% of sites)</span></li>
+      <li><span class="i18n-ja"><b>231『街のいま』カード</b>(life_snippet / 100% カバー)</span><span class="i18n-en"><b>231 "today" cards</b> (life_snippet, 100% of sites)</span></li>
+      <li><span class="i18n-ja"><b>206 軼話・ゴシップカード</b>(lore)</span><span class="i18n-en"><b>206 lore / gossip cards</b></span></li>
+      <li><span class="i18n-ja"><b>35 主要人物</b>・<b>27 証言</b>・<b>23 訴訟</b>・<b>51 系譜</b>・<b>43 組織系統樹エッジ</b></span><span class="i18n-en"><b>35 people</b> · <b>27 testimonies</b> · <b>23 prosecutions</b> · <b>51 chronicle entries</b> · <b>43 org-tree edges</b></span></li>
+      <li><span class="i18n-ja"><b>468 出典</b>(13 メディア種別)・<b>28 ガイドツアー</b>(7 カテゴリ)</span><span class="i18n-en"><b>468 sources</b> (13 media kinds) · <b>28 guided tours</b> (7 categories)</span></li>
     </ul>
 
-    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">出典・素材</h3>
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">
+      <span class="i18n-ja">出典・素材</span><span class="i18n-en">Sources &amp; materials</span>
+    </h3>
     <p style="font-size:12.5px; line-height:1.7;">
-      公開報道・判決文・警察白書・OFAC SDN リスト・国会議事録・関連書籍・映像参照・学術論文を横断。
-      具体的には西日本新聞・朝日新聞・毎日新聞・NHK・共同通信・Jake Adelstein(Tokyo Vice)・
-      Andrew Rankin(日本ヤクザ国際比較研究)・溝口敦・鈴木智彦・国正武重などの定常的取材を参照。
-      地図タイルは OpenStreetMap / Esri World Imagery。衛星タイムマシンは Esri Wayback。
-      POI は OpenStreetMap Overpass API。
+      <span class="i18n-ja">公開報道・判決文・警察白書・OFAC SDN リスト・国会議事録・関連書籍・映像参照・学術論文を横断。
+        具体的には西日本新聞・朝日新聞・毎日新聞・NHK・共同通信・Jake Adelstein(Tokyo Vice)・
+        Andrew Rankin(日本ヤクザ国際比較研究)・溝口敦・鈴木智彦・国正武重などの定常的取材を参照。
+        地図タイルは OpenStreetMap / Esri World Imagery。衛星タイムマシンは Esri Wayback。
+        POI は OpenStreetMap Overpass API。</span>
+      <span class="i18n-en">Public reporting, court rulings, NPA white papers, OFAC SDN list, Diet records,
+        related books, film references, academic papers. Outlets include Nishinippon Shimbun,
+        Asahi, Mainichi, NHK, Kyodo, Jake Adelstein (Tokyo Vice), Andrew Rankin (Japanese yakuza
+        in international comparative research), Atsushi Mizoguchi, Tomohiko Suzuki, Takeshige
+        Kunimasa. Map tiles: OpenStreetMap / Esri World Imagery. Time-machine satellite:
+        Esri Wayback. POIs via OpenStreetMap Overpass API.</span>
     </p>
 
-    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">編集ポリシー</h3>
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">
+      <span class="i18n-ja">編集ポリシー</span><span class="i18n-en">Editorial policy</span>
+    </h3>
     <ul style="font-size:12.5px; line-height:1.7;">
-      <li><b>被害者の氏名・自宅番地は載せない</b>(町丁目どまり)</li>
-      <li><b>判決公開済の建物名・組事務所所在地・公的施設の住所は明示</b></li>
-      <li>公開報道・判決文・警察白書・OFAC SDN・国会議事録に限る</li>
-      <li>故人指導者・判決公開済被告・自著の著者・公的役職者のみ実名</li>
-      <li>現役組員の実名は載せない</li>
+      <li><span class="i18n-ja"><b>被害者の氏名・自宅番地は載せない</b>(町丁目どまり)</span><span class="i18n-en"><b>Victim names and street addresses are omitted</b> (chome centroid only)</span></li>
+      <li><span class="i18n-ja"><b>判決公開済の建物名・組事務所所在地・公的施設の住所は明示</b></span><span class="i18n-en"><b>Building names, gang office addresses, and public facility addresses already disclosed in rulings are stated</b></span></li>
+      <li><span class="i18n-ja">公開報道・判決文・警察白書・OFAC SDN・国会議事録に限る</span><span class="i18n-en">Sourced only from public reporting, court rulings, NPA white papers, OFAC SDN, and Diet records</span></li>
+      <li><span class="i18n-ja">故人指導者・判決公開済被告・自著の著者・公的役職者のみ実名</span><span class="i18n-en">Real names only for deceased leaders, defendants in disclosed rulings, self-published authors, and public officeholders</span></li>
+      <li><span class="i18n-ja">現役組員の実名は載せない</span><span class="i18n-en">Active gang members are not named</span></li>
     </ul>
 
-    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">methodology(構築手法)</h3>
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">
+      <span class="i18n-ja">methodology(構築手法)</span><span class="i18n-en">Methodology</span>
+    </h3>
     <p style="font-size:12.5px; line-height:1.7;">
-      Python 3 + SQLite で正規化済みデータベース(<code>kokura.db</code>)を構築、
-      <code>dash5.py</code> が単一の HTML として埋め込みレンダリング(全データを JSON ペイロードで同梱)。
-      Leaflet 1.9.4(自己ホスト・CDN非依存)・OpenStreetMap・Esri Wayback を統合。
-      初期データ投入後は段階的フェーズスクリプト(<code>phase4-41</code>)で各層を拡充。
-      公開は GitHub Pages、ソースコードは MIT ライセンス。
+      <span class="i18n-ja">Python 3 + SQLite で正規化済みデータベース(<code>kokura.db</code>)を構築、
+        <code>dash5.py</code> が単一の HTML として埋め込みレンダリング(全データを JSON ペイロードで同梱)。
+        Leaflet 1.9.4(自己ホスト・CDN非依存)・OpenStreetMap・Esri Wayback を統合。
+        初期データ投入後は段階的フェーズスクリプト(<code>phase4-41</code>)で各層を拡充。
+        公開は GitHub Pages、ソースコードは MIT ライセンス。</span>
+      <span class="i18n-en">Built with Python 3 + SQLite as a normalized database (<code>kokura.db</code>);
+        <code>dash5.py</code> renders a single HTML file with the entire dataset embedded as a JSON payload.
+        Integrates Leaflet 1.9.4 (self-hosted, no CDN), OpenStreetMap, and Esri Wayback.
+        After initial seeding, content is built up through staged phase scripts (<code>phase4-41</code>).
+        Hosted on GitHub Pages; source code under MIT license.</span>
     </p>
 
-    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">免責・限界</h3>
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">
+      <span class="i18n-ja">免責・限界</span><span class="i18n-en">Disclaimer &amp; limits</span>
+    </h3>
     <p style="font-size:12.5px; line-height:1.7;">
-      本マップは報道書籍・判決文ベースの二次資料整理であり、各記述の最新性・厳密な正確性は
-      個別の一次資料で都度ご確認ください。被害者・関係者への二次加害を避ける編集を意識していますが、
-      不適切な記述があれば <a href="https://github.com/morigori1/kokura-underworld-map/issues"
-      target="_blank" style="color:var(--accent2);">GitHub Issues</a> へお知らせください。
+      <span class="i18n-ja">本マップは報道書籍・判決文ベースの二次資料整理であり、各記述の最新性・厳密な正確性は
+        個別の一次資料で都度ご確認ください。被害者・関係者への二次加害を避ける編集を意識していますが、
+        不適切な記述があれば <a href="https://github.com/morigori1/kokura-underworld-map/issues"
+        target="_blank" style="color:var(--accent2);">GitHub Issues</a> へお知らせください。</span>
+      <span class="i18n-en">This map is a secondary-source synthesis from public reporting and court rulings;
+        for the latest and strictly accurate facts please consult individual primary sources.
+        We try to avoid secondary harm to victims and their families — if you spot inappropriate
+        content, please file a <a href="https://github.com/morigori1/kokura-underworld-map/issues"
+        target="_blank" style="color:var(--accent2);">GitHub Issue</a>.</span>
     </p>
 
-    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">謝辞・連絡</h3>
+    <h3 style="color:var(--accent); font-size:14px; margin:20px 0 6px;">
+      <span class="i18n-ja">謝辞・連絡</span><span class="i18n-en">Acknowledgements &amp; contact</span>
+    </h3>
     <p style="font-size:12.5px; line-height:1.7;">
-      地元紙の地道な取材、関連書籍の長年の蓄積、警察・暴追運動センターの公開情報、
-      OpenStreetMap コミュニティに感謝します。
-      フィードバック・修正提案は GitHub Issues、コードへの貢献は Pull Request 歓迎。
+      <span class="i18n-ja">地元紙の地道な取材、関連書籍の長年の蓄積、警察・暴追運動センターの公開情報、
+        OpenStreetMap コミュニティに感謝します。
+        フィードバック・修正提案は GitHub Issues、コードへの貢献は Pull Request 歓迎。</span>
+      <span class="i18n-en">Thanks to the steady reporting of local newspapers, the years of accumulated
+        scholarship in related books, the public information from police and anti-yakuza-promotion centers,
+        and the OpenStreetMap community.
+        Feedback and corrections via GitHub Issues; code contributions via Pull Request welcome.</span>
     </p>
 
     <div style="text-align:center; margin:30px 0 10px;">
       <a href="https://github.com/morigori1/kokura-underworld-map" target="_blank"
          style="display:inline-block; background:var(--accent); color:#fff; padding:8px 20px;
                 border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;">
-        🔗 GitHub リポジトリ
+        <span class="i18n-ja">🔗 GitHub リポジトリ</span>
+        <span class="i18n-en">🔗 GitHub repository</span>
       </a>
       <a href="https://compoundtimemachine.com" target="_blank"
          style="display:inline-block; background:var(--accent2); color:#000; padding:8px 20px;
                 border-radius:4px; text-decoration:none; font-size:12px;">
-        🌏 姉妹プロジェクト Compound Time Machine
+        <span class="i18n-ja">🌏 姉妹プロジェクト Compound Time Machine</span>
+        <span class="i18n-en">🌏 Sister project: Compound Time Machine</span>
       </a>
     </div>
 
     <button id="close-about" type="button" style="display:block; margin:20px auto 10px;
             background:var(--accent); color:#fff; border:none; padding:12px 36px;
             border-radius:4px; font-size:14px; font-weight:600; cursor:pointer;">
-      閉じる
+      <span class="i18n-ja">閉じる</span><span class="i18n-en">Close</span>
     </button>
   </div>
 </div>
@@ -2560,12 +2652,13 @@ window.openAbout = openAbout; window.closeAbout = closeAbout;
 const closeAboutBtn = document.getElementById('close-about');
 if (closeAboutBtn) closeAboutBtn.onclick = closeAbout;
 if (aboutEl) aboutEl.onclick = (e) => { if (e.target === aboutEl) closeAbout(); };
-const openAboutLink = document.getElementById('open-about-from-help');
-if (openAboutLink) openAboutLink.onclick = (e) => {
-  e.preventDefault();
-  helpEl.classList.remove('show');
-  openAbout();
-};
+document.querySelectorAll('#open-about-from-help, #open-about-from-help-en').forEach(el => {
+  el.onclick = (e) => {
+    e.preventDefault();
+    helpEl.classList.remove('show');
+    openAbout();
+  };
+});
 
 // Show help once on first visit — after splash is dismissed
 function maybeShowFirstHelp() {
