@@ -1145,7 +1145,39 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   }
   @media (min-width: 721px) {
-    #mobile-fab-stack { display:none !important; }
+    /* Show the FAB stack on desktop too — top-right corner, horizontal row.
+       Replaces the old separate #help-btn and #layers floaters. */
+    #mobile-fab-stack {
+      position:absolute; top:60px; right:12px; z-index:1110;
+      display:flex; flex-direction:row; gap:8px;
+    }
+    #mobile-fab-stack button {
+      width:40px; height:40px; border-radius:50%;
+      border:none; font-size:18px; font-weight:700; cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);
+      display:flex; align-items:center; justify-content:center;
+      transition: transform 0.12s, opacity 0.12s, box-shadow 0.12s;
+      position:relative;
+    }
+    #mobile-fab-stack button:hover {
+      transform: translateY(-2px);
+      box-shadow:0 4px 12px rgba(0,0,0,0.6);
+    }
+    /* Tooltip on hover using title attribute via CSS */
+    #mobile-fab-stack button:hover::after {
+      content: attr(title);
+      position:absolute; top:46px; right:0;
+      background:rgba(8,9,11,0.95); color:#fff;
+      padding:4px 10px; border-radius:4px;
+      font-size:11px; font-weight:400; white-space:nowrap;
+      pointer-events:none; z-index:1500;
+      box-shadow:0 2px 6px rgba(0,0,0,0.6);
+    }
+    /* On desktop, hide the original right-side help-btn + layers
+       (FAB stack replaces them) */
+    #help-btn { display:none !important; }
+    #layers   { display:none !important; }
+    /* Mobile-only elements remain hidden */
     #filter-modal { display:none !important; }
     #timeline-expand-tab { display:none !important; }
   }
