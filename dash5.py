@@ -1228,7 +1228,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   @media (min-width: 721px) {
     /* Show the FAB stack on desktop — top-right, BELOW all top ribbons
        (topbar 50 + modebar 36 + source-ribbon 30 = 116). Position at 126
-       so there's a 10px breathing room above. */
+       so there's a 10px breathing room above.
+       When the detail panel is open (440px wide on the right), slide the
+       FAB stack LEFT so it doesn't overlap the detail panel. */
     #mobile-fab-stack {
       position:absolute; top:126px; right:12px; z-index:1110;
       display:flex; flex-direction:row; gap:8px;
@@ -1237,6 +1239,11 @@ HTML_TEMPLATE = r"""<!doctype html>
       border:1px solid var(--line);
       border-radius:24px;
       box-shadow:0 4px 12px rgba(0,0,0,0.5);
+      transition: right 0.32s ease;
+    }
+    /* When detail panel is open, push FAB to the left of the panel */
+    body.detail-open #mobile-fab-stack {
+      right: calc(440px + 12px);
     }
     #mobile-fab-stack button {
       width:40px; height:40px; border-radius:50%;
@@ -2237,6 +2244,7 @@ function openDetail(slug) {
 
   detailBody.innerHTML = html.join('\n');
   detailEl.classList.add('open');
+  document.body.classList.add('detail-open');
 
   const slider = document.getElementById('wb-slider');
   if (slider && s.imagery.length) {
@@ -2285,12 +2293,14 @@ function openDetail(slug) {
 
 function closeDetail() {
   detailEl.classList.remove('open');
+  document.body.classList.remove('detail-open');
   if (waybackLayer) { map.removeLayer(waybackLayer); waybackLayer = null; }
 }
 // Tap on empty map (outside markers) closes the panels on mobile
 map.on('click', () => {
   if (!window.matchMedia('(max-width: 720px)').matches) return;
   detailEl.classList.remove('open');
+  document.body.classList.remove('detail-open');
   document.getElementById('side').classList.remove('open');
 });
 window.openDetail = openDetail;
