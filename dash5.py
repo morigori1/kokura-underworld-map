@@ -1229,8 +1229,8 @@ HTML_TEMPLATE = r"""<!doctype html>
     /* Show the FAB stack on desktop — top-right, BELOW all top ribbons
        (topbar 50 + modebar 36 + source-ribbon 30 = 116). Position at 126
        so there's a 10px breathing room above.
-       When the detail panel is open (440px wide on the right), slide the
-       FAB stack LEFT so it doesn't overlap the detail panel. */
+       FAB stays in place when detail opens — the detail panel adds a
+       top spacer so its content starts BELOW the FAB rather than under it. */
     #mobile-fab-stack {
       position:absolute; top:126px; right:12px; z-index:1110;
       display:flex; flex-direction:row; gap:8px;
@@ -1239,12 +1239,10 @@ HTML_TEMPLATE = r"""<!doctype html>
       border:1px solid var(--line);
       border-radius:24px;
       box-shadow:0 4px 12px rgba(0,0,0,0.5);
-      transition: right 0.32s ease;
     }
-    /* When detail panel is open, push FAB to the left of the panel */
-    body.detail-open #mobile-fab-stack {
-      right: calc(440px + 12px);
-    }
+    /* Detail panel: extra padding-top so the first content row starts
+       below the FAB area (FAB at top 126-176 → content starts at top 184). */
+    #detail { padding-top: 68px; }
     #mobile-fab-stack button {
       width:40px; height:40px; border-radius:50%;
       border:none; font-size:18px; font-weight:700; cursor:pointer;
