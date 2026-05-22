@@ -61,6 +61,7 @@ PHASES = [
     ('phase45_tokuryu_life_depth.py','phase44 25拠点の周辺生活情報深化 — 2-3枚目の life_snippet(街並み・時間帯・通行人・近隣ランドマーク・地域文化)'),
     ('phase46_local_media.py','各拠点に地元メディア・行政情報を関連付け(地方紙・テレビ・県/市役所・県警・暴追センター 31都道府県分)'),
     ('phase47_intl_media.py','海外拠点に国別の主要メディア・公的機関を追加(12 国・地域)'),
+    ('phase48_city_media.py','都市・区レベルの地元メディア大幅追加(396 都市/区エントリ・tier 階層導入で都市レベルを上位表示)'),
     ('dash5.py',               'render index.html'),
 ]
 

@@ -202,10 +202,18 @@ def main():
             """, sid)
         local_media = []
         if HAS_LMED:
-            local_media = fetch_dicts(cur, """
-                SELECT kind, name, url, note FROM local_media
-                WHERE site_id = ? ORDER BY ord
-            """, sid)
+            # Check if tier column exists
+            has_tier = any(c[1] == 'tier' for c in cur.execute('PRAGMA table_info(local_media)').fetchall())
+            if has_tier:
+                local_media = fetch_dicts(cur, """
+                    SELECT kind, name, url, note, tier FROM local_media
+                    WHERE site_id = ? ORDER BY ord, id
+                """, sid)
+            else:
+                local_media = fetch_dicts(cur, """
+                    SELECT kind, name, url, note FROM local_media
+                    WHERE site_id = ? ORDER BY ord, id
+                """, sid)
         sites.append({
             'id': sid, 'slug': s['slug'], 'label': s['label'],
             'lat': s['lat'], 'lon': s['lon'], 'unc': s['unc'],
@@ -667,9 +675,14 @@ HTML_TEMPLATE = r"""<!doctype html>
   #detail .life .tx { color:var(--ink-dim); line-height:1.55; margin-top:4px; }
   #detail .life .src { color:var(--ink-dim); font-size:11px; margin-top:4px; opacity:0.7; }
   /* ===== Local media section ===== */
+  #detail .lm-tier { margin:8px 0 12px; }
+  #detail .lm-tier-head {
+    color:var(--accent); font-weight:700; font-size:12px;
+    margin:6px 0 4px; letter-spacing:0.04em;
+  }
   #detail .local-media {
-    border:1px solid var(--line); border-radius:6px; padding:10px;
-    background:rgba(0,40,60,0.18); margin:8px 0;
+    border:1px solid var(--line); border-radius:6px; padding:8px 10px;
+    background:rgba(0,40,60,0.18); margin:4px 0 0;
   }
   #detail .lm-group {
     display:flex; align-items:flex-start; gap:8px;
@@ -2166,7 +2179,6 @@ function openDetail(slug) {
 
   if (s.local_media && s.local_media.length) {
     html.push(`<h3>📰 地元メディア・行政</h3>`);
-    html.push(`<div class="local-media">`);
     const KIND_ICON = {
       newspaper: '📰', tv: '📺', radio: '📻', magazine: '📓',
       pref_gov: '🏛', city_gov: '🏢', pref_police: '🚓',
@@ -2175,36 +2187,52 @@ function openDetail(slug) {
     };
     const KIND_LABEL = {
       newspaper: '新聞', tv: 'テレビ', radio: 'ラジオ', magazine: '雑誌',
-      pref_gov: '県庁/府庁', city_gov: '市役所', pref_police: '県警',
-      bouhai_center: '暴追センター', court: '裁判所',
+      pref_gov: '県庁/府庁', city_gov: '市/区役所', pref_police: '警察',
+      bouhai_center: '暴追', court: '裁判所',
       library: '図書館', museum: '博物館', npo: 'NPO', other: '他'
     };
-    // Group by kind
-    const grouped = {};
+    // tier 別にグループ化 (city → pref → intl)
+    const TIER_LABEL = { city: '🌆 市町村・区', pref: '🏞 都道府県', intl: '🌏 国・国際' };
+    const tiers = { city: [], pref: [], intl: [] };
     for (const lm of s.local_media) {
-      const k = lm.kind || 'other';
-      if (!grouped[k]) grouped[k] = [];
-      grouped[k].push(lm);
+      const t = lm.tier || 'pref';
+      if (tiers[t]) tiers[t].push(lm);
+      else tiers.pref.push(lm);
     }
-    const order = ['newspaper','tv','radio','magazine','pref_gov','city_gov',
-                   'pref_police','bouhai_center','court','library','museum','npo','other'];
-    for (const k of order) {
-      if (!grouped[k]) continue;
-      html.push(`<div class="lm-group">`);
-      html.push(`  <div class="lm-kind">${KIND_ICON[k] || '🔗'} ${KIND_LABEL[k] || k}</div>`);
-      html.push(`  <div class="lm-items">`);
-      for (const lm of grouped[k]) {
-        const ico = '';  // already in group header
-        if (lm.url) {
-          html.push(`<a class="lm-item" href="${escapeHtml(lm.url)}" target="_blank" rel="noopener">${escapeHtml(lm.name)}</a>`);
-        } else {
-          html.push(`<span class="lm-item">${escapeHtml(lm.name)}</span>`);
+    const order = ['newspaper','tv','radio','magazine',
+                   'city_gov','pref_gov','pref_police','bouhai_center',
+                   'court','library','museum','npo','other'];
+    for (const tier of ['city','pref','intl']) {
+      const items = tiers[tier];
+      if (!items.length) continue;
+      html.push(`<div class="lm-tier">`);
+      html.push(`  <div class="lm-tier-head">${TIER_LABEL[tier]}</div>`);
+      html.push(`  <div class="local-media">`);
+      // group within tier by kind
+      const grouped = {};
+      for (const lm of items) {
+        const k = lm.kind || 'other';
+        if (!grouped[k]) grouped[k] = [];
+        grouped[k].push(lm);
+      }
+      for (const k of order) {
+        if (!grouped[k]) continue;
+        html.push(`<div class="lm-group">`);
+        html.push(`  <div class="lm-kind">${KIND_ICON[k] || '🔗'} ${KIND_LABEL[k] || k}</div>`);
+        html.push(`  <div class="lm-items">`);
+        for (const lm of grouped[k]) {
+          if (lm.url) {
+            html.push(`<a class="lm-item" href="${escapeHtml(lm.url)}" target="_blank" rel="noopener">${escapeHtml(lm.name)}</a>`);
+          } else {
+            html.push(`<span class="lm-item">${escapeHtml(lm.name)}</span>`);
+          }
         }
+        html.push(`  </div>`);
+        html.push(`</div>`);
       }
       html.push(`  </div>`);
       html.push(`</div>`);
     }
-    html.push(`</div>`);
   }
 
   detailBody.innerHTML = html.join('\n');
