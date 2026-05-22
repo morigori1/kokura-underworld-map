@@ -482,10 +482,13 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   /* ===== Side panel (chronicle / floating lore) ===== */
   #side {
-    position:absolute; top:116px; left:0; bottom:150px; width:340px; z-index:1000;
+    position:absolute; top:86px; left:0; bottom:150px; width:340px; z-index:1000;
     background:var(--panel); border-right:1px solid var(--line); overflow:auto;
     padding:14px 16px;
   }
+  /* On desktop, the close-side button on #side is hidden — the side panel
+     is a fixed left column, not a slide-up bottom sheet. */
+  #side .close-side { display:none; }
   #side h2 {
     font-size:12px; margin:18px 0 8px; color:var(--accent2); letter-spacing:0.08em;
     cursor:pointer; user-select:none;
@@ -1145,11 +1148,17 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   }
   @media (min-width: 721px) {
-    /* Show the FAB stack on desktop too — top-right corner, horizontal row.
-       Replaces the old separate #help-btn and #layers floaters. */
+    /* Show the FAB stack on desktop — top-right, BELOW all top ribbons
+       (topbar 50 + modebar 36 + source-ribbon 30 = 116). Position at 126
+       so there's a 10px breathing room above. */
     #mobile-fab-stack {
-      position:absolute; top:60px; right:12px; z-index:1110;
+      position:absolute; top:126px; right:12px; z-index:1110;
       display:flex; flex-direction:row; gap:8px;
+      padding:6px 10px;
+      background:rgba(13,15,18,0.85);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.5);
     }
     #mobile-fab-stack button {
       width:40px; height:40px; border-radius:50%;
@@ -1177,6 +1186,8 @@ HTML_TEMPLATE = r"""<!doctype html>
        (FAB stack replaces them) */
     #help-btn { display:none !important; }
     #layers   { display:none !important; }
+    /* Side panel × close button is hidden on desktop (side is a fixed column) */
+    #side .close-side { display:none !important; }
     /* Mobile-only elements remain hidden */
     #filter-modal { display:none !important; }
     #timeline-expand-tab { display:none !important; }
