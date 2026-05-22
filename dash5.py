@@ -116,6 +116,7 @@ def main():
     HAS_POI       = has_table(cur, 'poi')
     HAS_TESTIMONY = has_table(cur, 'testimony')
     HAS_LIFE      = has_table(cur, 'life_snippet')
+    HAS_LMED      = has_table(cur, 'local_media')
     HAS_NARR      = has_table(cur, 'narration')
     HAS_ERA       = has_table(cur, 'era_caption')
     HAS_IMGRES    = has_table(cur, 'image_resource')
@@ -199,6 +200,12 @@ def main():
                 FROM lore l LEFT JOIN source src ON l.source_id = src.id
                 WHERE l.site_id = ? ORDER BY l.ord
             """, sid)
+        local_media = []
+        if HAS_LMED:
+            local_media = fetch_dicts(cur, """
+                SELECT kind, name, url, note FROM local_media
+                WHERE site_id = ? ORDER BY ord
+            """, sid)
         sites.append({
             'id': sid, 'slug': s['slug'], 'label': s['label'],
             'lat': s['lat'], 'lon': s['lon'], 'unc': s['unc'],
@@ -209,6 +216,7 @@ def main():
             'events': evts, 'narration': narr, 'eras': eras,
             'imagery': imagery, 'poi': poi, 'testimony': testimony,
             'life': life, 'images': images, 'lore': lore,
+            'local_media': local_media,
         })
 
     chronicle = fetch_dicts(cur, """
@@ -658,6 +666,27 @@ HTML_TEMPLATE = r"""<!doctype html>
   #detail .life .tp { color:var(--accent3); font-weight:600; }
   #detail .life .tx { color:var(--ink-dim); line-height:1.55; margin-top:4px; }
   #detail .life .src { color:var(--ink-dim); font-size:11px; margin-top:4px; opacity:0.7; }
+  /* ===== Local media section ===== */
+  #detail .local-media {
+    border:1px solid var(--line); border-radius:6px; padding:10px;
+    background:rgba(0,40,60,0.18); margin:8px 0;
+  }
+  #detail .lm-group {
+    display:flex; align-items:flex-start; gap:8px;
+    padding:5px 0; border-top:1px dashed var(--line);
+  }
+  #detail .lm-group:first-child { border-top:none; }
+  #detail .lm-kind {
+    color:var(--accent2); font-size:11px; font-weight:700;
+    min-width:88px; flex-shrink:0;
+  }
+  #detail .lm-items { flex:1; display:flex; flex-wrap:wrap; gap:4px 10px; }
+  #detail .lm-item {
+    color:var(--ink); font-size:12px;
+    text-decoration:none; border-bottom:1px dotted var(--line);
+  }
+  #detail .lm-item:hover { color:var(--accent2); border-bottom-color:var(--accent2); }
+
   #detail .lore-card { margin:8px 0; }
   #detail .wayback-controls { margin:8px 0 4px; }
   #detail .wayback-controls .slider { width:100%; }
@@ -2125,9 +2154,57 @@ function openDetail(slug) {
       html.push(`<div class="life">`);
       html.push(`  <div class="tp">${escapeHtml(l.topic || '')}</div>`);
       html.push(`  <div class="tx">${escapeHtml(l.text || '')}</div>`);
-      if (l.source_label) html.push(`<div class="src">出典: ${escapeHtml(l.source_label)}</div>`);
+      if (l.source_label) {
+        const src = l.source_url
+          ? `<a href="${escapeHtml(l.source_url)}" target="_blank" rel="noopener" style="color:var(--accent2);">${escapeHtml(l.source_label)}</a>`
+          : escapeHtml(l.source_label);
+        html.push(`<div class="src">出典: ${src}</div>`);
+      }
       html.push(`</div>`);
     }
+  }
+
+  if (s.local_media && s.local_media.length) {
+    html.push(`<h3>📰 地元メディア・行政</h3>`);
+    html.push(`<div class="local-media">`);
+    const KIND_ICON = {
+      newspaper: '📰', tv: '📺', radio: '📻', magazine: '📓',
+      pref_gov: '🏛', city_gov: '🏢', pref_police: '🚓',
+      bouhai_center: '🛡', court: '⚖', library: '📚', museum: '🏛',
+      npo: '🤝', other: '🔗'
+    };
+    const KIND_LABEL = {
+      newspaper: '新聞', tv: 'テレビ', radio: 'ラジオ', magazine: '雑誌',
+      pref_gov: '県庁/府庁', city_gov: '市役所', pref_police: '県警',
+      bouhai_center: '暴追センター', court: '裁判所',
+      library: '図書館', museum: '博物館', npo: 'NPO', other: '他'
+    };
+    // Group by kind
+    const grouped = {};
+    for (const lm of s.local_media) {
+      const k = lm.kind || 'other';
+      if (!grouped[k]) grouped[k] = [];
+      grouped[k].push(lm);
+    }
+    const order = ['newspaper','tv','radio','magazine','pref_gov','city_gov',
+                   'pref_police','bouhai_center','court','library','museum','npo','other'];
+    for (const k of order) {
+      if (!grouped[k]) continue;
+      html.push(`<div class="lm-group">`);
+      html.push(`  <div class="lm-kind">${KIND_ICON[k] || '🔗'} ${KIND_LABEL[k] || k}</div>`);
+      html.push(`  <div class="lm-items">`);
+      for (const lm of grouped[k]) {
+        const ico = '';  // already in group header
+        if (lm.url) {
+          html.push(`<a class="lm-item" href="${escapeHtml(lm.url)}" target="_blank" rel="noopener">${escapeHtml(lm.name)}</a>`);
+        } else {
+          html.push(`<span class="lm-item">${escapeHtml(lm.name)}</span>`);
+        }
+      }
+      html.push(`  </div>`);
+      html.push(`</div>`);
+    }
+    html.push(`</div>`);
   }
 
   detailBody.innerHTML = html.join('\n');
