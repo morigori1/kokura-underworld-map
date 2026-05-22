@@ -60,6 +60,7 @@ PHASES = [
     ('phase44_tokuryu_nationwide.py','トクリュウ全国分布拡充 — 25 新規拠点(2024-2025最新事案・全国分布・国際拠点)+ 多角的データ(34 narration + 25 life + 12 events + 22 sources 実 URL付)'),
     ('phase45_tokuryu_life_depth.py','phase44 25拠点の周辺生活情報深化 — 2-3枚目の life_snippet(街並み・時間帯・通行人・近隣ランドマーク・地域文化)'),
     ('phase46_local_media.py','各拠点に地元メディア・行政情報を関連付け(地方紙・テレビ・県/市役所・県警・暴追センター 31都道府県分)'),
+    ('phase47_intl_media.py','海外拠点に国別の主要メディア・公的機関を追加(12 国・地域)'),
     ('dash5.py',               'render index.html'),
 ]
 
