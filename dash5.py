@@ -632,8 +632,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   #detail .wayback-controls .era { color:var(--ink-dim); font-size:11px; line-height:1.4; margin-top:4px; }
 
   /* ===== Bottom event timeline ===== */
+  /* Full screen width on desktop — the side panel ends at bottom:150
+     (above the timeline) so they share the boundary at y=viewport-150
+     without overlap. */
   #timeline {
-    position:absolute; left:340px; right:0; bottom:0; height:150px; z-index:1000;
+    position:absolute; left:0; right:0; bottom:0; height:150px; z-index:1000;
     background:var(--panel); border-top:1px solid var(--line);
     padding:0;
   }
@@ -906,7 +909,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   @media (max-width: 900px) {
     #side { width:300px; }
     #detail { width:90%; }
-    #timeline { left:300px; }
+    /* timeline is already left:0 right:0 (full width) — keep it full */
     #legend { left:314px; }
   }
 
