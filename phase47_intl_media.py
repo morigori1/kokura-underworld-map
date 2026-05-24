@@ -230,6 +230,28 @@ SLUG_TO_COUNTRY = {
     'manila_jollibee': 'PH',
     'manila_jeepney': 'PH',
     'manila_intramuros': 'PH',
+    # Phase 54 hangure intl chaos
+    'manila_makati': 'PH',
+    'manila_quiapo': 'PH',
+    'manila_bgc': 'PH',
+    'phnom_penh_palace': 'KH',
+    'phnom_penh_bkk1': 'KH',
+    'sihanoukville_china': 'KH',
+    'yangon_old_town': 'MM',
+    'myawaddy_kk_park': 'MM',
+    'bangkok_sukhumvit': 'TH',
+    'pattaya_walking_street': 'TH',
+    'bangkok_asok': 'TH',
+    'hanoi_old_quarter': 'VN',
+    'hochiminh_ben_thanh': 'VN',
+    'hanoi_lotte_japan': 'VN',
+    'vientiane_mekong_riverside': 'LA',
+    'vientiane_patuxai': 'LA',
+    'busan_port': 'KR',
+    'seoul_itaewon': 'KR',
+    'seoul_gangnam': 'KR',
+    'hk_mongkok': 'HK',
+    'hk_wan_chai': 'HK',
     # 国際的 / グローバル拠点
     'ofac_treasury_designation': 'US',  # OFAC は米国財務省
 }
