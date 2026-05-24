@@ -226,6 +226,10 @@ SLUG_TO_COUNTRY = {
     'intl_la_cosa_nostra_us': 'US',
     'intl_mekong_compounds_ref': 'MEKONG',
     'roman_sagi_centers': 'INTL',
+    # Phase 53 Manila chaos
+    'manila_jollibee': 'PH',
+    'manila_jeepney': 'PH',
+    'manila_intramuros': 'PH',
     # 国際的 / グローバル拠点
     'ofac_treasury_designation': 'US',  # OFAC は米国財務省
 }
