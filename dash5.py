@@ -150,7 +150,7 @@ def main():
             """, sid)
         narr = []
         if HAS_NARR:
-            narr = fetch_dicts(cur, "SELECT title, body FROM narration WHERE site_id=? ORDER BY ord", sid)
+            narr = fetch_dicts(cur, "SELECT title, body, created_by FROM narration WHERE site_id=? ORDER BY ord", sid)
         eras = []
         if HAS_ERA:
             eras = fetch_dicts(cur, "SELECT year, caption FROM era_caption WHERE site_id=? ORDER BY year", sid)
@@ -181,7 +181,7 @@ def main():
         life = []
         if HAS_LIFE:
             life = fetch_dicts(cur, """
-                SELECT topic, text, source_label, source_url
+                SELECT topic, text, source_label, source_url, created_by
                 FROM life_snippet WHERE site_id=? ORDER BY ord
             """, sid)
         images = []
@@ -652,6 +652,16 @@ HTML_TEMPLATE = r"""<!doctype html>
                letter-spacing:0.08em; text-transform:uppercase; }
   #detail .narr p { font-size:13px; line-height:1.75; margin:0 0 12px; }
   #detail .narr .nt { font-weight:600; color:var(--ink); margin:8px 0 4px; font-size:13px; }
+  /* provenance markers */
+  #detail .prov-llm {
+    color:#999; font-size:10px; opacity:0.7; margin-left:4px;
+    border:1px solid #999; padding:0 4px; border-radius:3px;
+    vertical-align:middle;
+  }
+  #detail .prov-human {
+    color:#5cb85c; font-size:11px; margin-left:4px;
+    vertical-align:middle;
+  }
   #detail .evlist .ev {
     border-left:3px solid var(--accent); padding:6px 10px; margin:8px 0;
     background:rgba(217,83,79,0.06); font-size:12px; border-radius:0 4px 4px 0;
@@ -2103,7 +2113,15 @@ function openDetail(slug) {
     html.push(`<h3>解説</h3><div class="narr">`);
     for (const n of s.narration) {
       html.push(`<div class="nt">${escapeHtml(n.title || '')}</div>`);
-      html.push(`<p>${escapeHtml(n.body || '')}</p>`);
+      html.push(`<p>${escapeHtml(n.body || '')}`);
+      // Provenance tag: mark LLM-generated as 要検証
+      const cb = n.created_by || '';
+      if (cb.startsWith('llm:')) {
+        html.push(` <span class="prov-llm" title="AI 生成・要検証">⚠ AI</span>`);
+      } else if (cb.startsWith('human:')) {
+        html.push(` <span class="prov-human" title="人間執筆・検証済み">✓</span>`);
+      }
+      html.push(`</p>`);
     }
     html.push(`</div>`);
   }
