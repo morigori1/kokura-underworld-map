@@ -903,20 +903,20 @@ HTML_TEMPLATE = r"""<!doctype html>
   .pin {
     border-radius:50%; border:2px solid #fff;
     box-shadow:0 0 0 1px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.4);
-    transition: width 0.3s var(--ease-out), height 0.3s var(--ease-out),
-                background 0.3s, opacity 0.3s, transform 0.18s var(--ease-out);
+    transition: width 0.2s ease, height 0.2s ease,
+                background 0.2s, opacity 0.2s, transform 0.15s ease;
     cursor: pointer;
   }
   .leaflet-marker-icon:hover .pin {
-    transform: scale(1.18) translateY(-2px);
-    box-shadow:0 0 0 2px rgba(255,255,255,0.4), 0 6px 16px rgba(0,0,0,0.5);
+    transform: scale(1.08);
+    box-shadow:0 0 0 2px rgba(255,255,255,0.5), 0 4px 10px rgba(0,0,0,0.5);
   }
   .pin-pulse {
-    animation: pin-pulse 2s ease-in-out infinite;
+    animation: pin-pulse 3.5s ease-in-out infinite;
   }
   @keyframes pin-pulse {
     0%, 100% { box-shadow:0 0 0 1px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.4); }
-    50%      { box-shadow:0 0 0 3px rgba(217,83,79,0.4), 0 0 14px rgba(217,83,79,0.6); }
+    50%      { box-shadow:0 0 0 2px rgba(196,58,55,0.3), 0 0 10px rgba(196,58,55,0.4); }
   }
   .poi-pin { width:6px; height:6px; border-radius:50%; background:#9aa6b2;
              border:1px solid rgba(0,0,0,0.5); }
@@ -975,59 +975,51 @@ HTML_TEMPLATE = r"""<!doctype html>
     box-shadow:0 0 12px rgba(212,175,55,0.6);
   }
 
-  /* ===== Tour subtitle (movie-style lower-third) ===== */
+  /* ===== Tour subtitle (documentary caption — restrained) ===== */
   #tour-subtitle {
-    position:fixed; left:0; right:0; bottom:30%; z-index:1750;
+    position:fixed; left:0; right:0; top:154px; z-index:1750;
     pointer-events:none; text-align:center;
     display:none;
   }
   body.tour-active #tour-subtitle { display:block; }
   #tour-subtitle .inner {
     display:inline-block; max-width:80%;
-    background:linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.85) 100%);
-    padding:14px 24px; border-radius:4px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    opacity:0;
-    transform:translateY(8px);
-    transition:opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+    background:rgba(15,17,22,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding:8px 18px; border-radius:3px;
+    border:1px solid var(--glass-border);
+    opacity:0; transition:opacity 0.4s ease-out;
   }
-  #tour-subtitle.show .inner { opacity:1; transform:translateY(0); }
+  #tour-subtitle.show .inner { opacity:1; }
   #tour-subtitle .label {
-    color:var(--accent2); font-size:10px; letter-spacing:0.3em;
-    font-weight:700; text-transform:uppercase; margin-bottom:4px;
+    color:var(--ink-faint); font-size:9px; letter-spacing:0.24em;
+    font-weight:600; text-transform:uppercase; margin-bottom:2px;
   }
   #tour-subtitle .title {
-    color:#fff; font-family:var(--font-display);
-    font-size:24px; font-weight:700; letter-spacing:0.04em;
-    text-shadow:0 2px 12px rgba(0,0,0,0.8);
+    color:var(--ink-bright); font-size:13px;
+    font-weight:600; letter-spacing:0.02em;
   }
-  #tour-subtitle .desc {
-    color:var(--ink-dim); font-size:11px; margin-top:6px;
-    letter-spacing:0.04em;
-  }
+  #tour-subtitle .desc { display:none; }
   @media (max-width: 720px) {
-    #tour-subtitle { bottom:50%; }
-    #tour-subtitle .title { font-size:18px; }
+    #tour-subtitle { top:auto; bottom:170px; }
   }
 
-  /* ===== Marching ants on connection lines ===== */
+  /* ===== Marching ants on connection lines (slow, subtle) ===== */
   @keyframes marching-ants {
     to { stroke-dashoffset: -26; }
   }
   .leaflet-pane path.leaflet-interactive {
-    animation: marching-ants 1.2s linear infinite;
+    animation: marching-ants 3s linear infinite;
   }
 
-  /* ===== Marker bounce-in (on initial load) ===== */
-  @keyframes marker-bounce-in {
-    0%   { opacity:0; transform: translateY(-30px) scale(0.4); }
-    60%  { opacity:1; transform: translateY(4px) scale(1.1); }
-    80%  { transform: translateY(-2px) scale(0.95); }
-    100% { transform: translateY(0) scale(1); }
+  /* ===== Marker fade-in (documentary restraint) ===== */
+  @keyframes marker-fade-in {
+    from { opacity:0; }
+    to   { opacity:1; }
   }
   .pin-bouncing {
-    animation: marker-bounce-in 0.6s var(--ease-elegant) both;
+    animation: marker-fade-in 0.5s ease-out both;
   }
 
   /* ===== Image lightbox ===== */
@@ -1069,16 +1061,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   #detail .image img { cursor: zoom-in; transition: opacity 0.2s; }
   #detail .image img:hover { opacity: 0.85; }
 
-  /* Ken Burns slow pan on detail images */
-  @keyframes ken-burns {
-    0%   { transform: scale(1) translate(0, 0); }
-    50%  { transform: scale(1.08) translate(-1.5%, -1%); }
-    100% { transform: scale(1.04) translate(1%, 1%); }
-  }
-  #detail .image img {
-    animation: ken-burns 20s ease-in-out infinite alternate;
-    transform-origin: center;
-  }
+  /* Images are static (Ken Burns removed — too theatrical for historical photos) */
 
   /* ===== Testimony pull-quote ===== */
   #detail .testimony-pq {
@@ -1193,14 +1176,10 @@ HTML_TEMPLATE = r"""<!doctype html>
     position:relative;
   }
   .pin-halo-special::before {
-    content:''; position:absolute; inset:-8px;
+    content:''; position:absolute; inset:-6px;
     border-radius:50%; pointer-events:none;
-    box-shadow:0 0 0 2px var(--accent2), 0 0 16px var(--accent2);
-    animation:halo-pulse 2.5s ease-in-out infinite;
-  }
-  @keyframes halo-pulse {
-    0%, 100% { box-shadow:0 0 0 2px var(--accent2), 0 0 16px rgba(241,196,15,0.5); }
-    50%      { box-shadow:0 0 0 5px var(--accent2), 0 0 32px rgba(241,196,15,0.9); }
+    box-shadow:0 0 0 1px var(--gold);
+    opacity:0.6;
   }
 
   /* ===== Connection spotlight (when site selected) ===== */
@@ -2768,14 +2747,10 @@ function makeMarker(s, opts = {}) {
   return L.marker([s.lat, s.lon], { icon, title: s.label });
 }
 
-// Initial markers — bounce in sequentially for visual delight
-let __markerIdx = 0;
+// Initial markers — quiet fade-in (documentary restraint)
 for (const s of DATA.sites) {
   if (s.lat == null || s.lon == null) continue;
-  // Stagger bounce by 8ms per marker (max ~3s total for 350 markers)
-  const delay = Math.min(__markerIdx * 8, 2800);
-  __markerIdx++;
-  const m = makeMarker(s, { bounce: true, delay });
+  const m = makeMarker(s, { bounce: false });
   m.addTo(map);
   m.bindPopup(renderSitePopup(s), { maxWidth: 360 });
   // Hover ring preview (custom label)
@@ -3529,51 +3504,8 @@ function renderMiniMap(site) {
   </div>`;
 }
 
-// === Stats count-up animation ===
-function animateCountUp(id, target, duration = 1500) {
-  const el = document.getElementById(id);
-  if (!el || target <= 0) { if (el) el.textContent = target; return; }
-  const start = performance.now();
-  function step(now) {
-    const t = Math.min(1, (now - start) / duration);
-    // Easing: easeOutCubic
-    const e = 1 - Math.pow(1 - t, 3);
-    el.textContent = Math.floor(e * target);
-    if (t < 1) requestAnimationFrame(step);
-    else el.textContent = target;
-  }
-  requestAnimationFrame(step);
-}
-// Hook into stats display — animate on load
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    const c = DATA.counts || {};
-    animateCountUp('stat-sites', c.sites || 0);
-    animateCountUp('stat-events', c.events || 0);
-    animateCountUp('stat-lore', c.lore || 0);
-    animateCountUp('stat-persons', c.persons || 0);
-    animateCountUp('stat-chron', c.chronicle || 0);
-    animateCountUp('stat-src', c.source_kinds || 0);
-    animateCountUp('stat-src-total', c.sources_total || 0);
-  }, 300);
-});
-
-// === Mouse-following parallax (subtle) ===
-let parallaxFrame = null;
-document.addEventListener('mousemove', e => {
-  if (parallaxFrame) return;
-  parallaxFrame = requestAnimationFrame(() => {
-    parallaxFrame = null;
-    // Move map tiles by tiny amount based on cursor position
-    const w = window.innerWidth, h = window.innerHeight;
-    const px = (e.clientX / w - 0.5) * 4;  // -2..+2 px
-    const py = (e.clientY / h - 0.5) * 4;
-    const tilePane = document.querySelector('.leaflet-tile-pane');
-    if (tilePane) {
-      tilePane.style.transform = `translate3d(${-px}px, ${-py}px, 0)`;
-    }
-  });
-});
+// Stats: show numbers directly (count-up animation removed — too playful for serious content)
+// Mouse parallax: removed (distracting, can cause motion sickness)
 
 function renderTagRadar(site) {
   const axes = ['economy', 'judicial', 'radius', 'violence_eco',
