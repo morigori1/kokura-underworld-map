@@ -994,8 +994,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   }
   #tour-subtitle.show .inner { opacity:1; transform:translateY(0); }
   #tour-subtitle .label {
-    color:var(--accent2); font-size:10px; letter-spacing:0.3em;
-    font-weight:700; text-transform:uppercase; margin-bottom:4px;
+    color:var(--accent2); font-size:10px; letter-spacing:0.15em;
+    font-weight:700; margin-bottom:4px;
   }
   #tour-subtitle .title {
     color:#fff; font-family:var(--font-display);
@@ -1171,7 +1171,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   }
   #era-banner.show { display:flex; opacity:1; pointer-events:auto; }
   #era-banner .era-label {
-    color:rgba(255,255,255,0.4); font-size:13px; letter-spacing:0.3em;
+    color:rgba(255,255,255,0.4); font-size:13px; letter-spacing:0.15em;
     margin-bottom:14px;
   }
   #era-banner .era-title {
@@ -2001,7 +2001,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 
 <!-- Tour subtitle (movie-style lower-third) -->
 <div id="tour-subtitle"><div class="inner">
-  <div class="label">NOW VIEWING</div>
+  <div class="label">現在の拠点</div>
   <div class="title"></div>
   <div class="desc"></div>
 </div></div>
@@ -3724,11 +3724,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // === Era chapter banner (during chronological tour) ===
 const ERA_BANNERS = {
-  '戦後闇市':  { sub: '1945-1955', desc: '焼け跡から組織が生まれる' },
-  '高度成長':  { sub: '1956-1991', desc: '街と組織が同時に巨大化' },
-  '平成抗争':  { sub: '1992-2005', desc: '暴対法と血の応酬' },
-  '頂上作戦':  { sub: '2006-2024', desc: '組織のトップを首謀者として立てる' },
-  '解体後':    { sub: '2019-現在', desc: '指定暴力団からトクリュウへ' },
+  '戦後闇市':  { sub: '1945-1955', desc: '闇市文化と戦後組織化の起点' },
+  '高度成長':  { sub: '1956-1991', desc: '全国組織化と地場連合体の形成' },
+  '平成抗争':  { sub: '1992-2005', desc: '暴対法施行と組織間抗争の激化' },
+  '頂上作戦':  { sub: '2006-2024', desc: '組織トップへの首謀者責任認定の追求' },
+  '解体後':    { sub: '2019-現在', desc: '指定暴力団規模の縮小とトクリュウ型犯罪の拡大' },
 };
 let eraBannerTimer = null;
 function showEraBanner(era, dur = 2500) {
@@ -3736,7 +3736,7 @@ function showEraBanner(era, dur = 2500) {
   if (!el || !era) return;
   const meta = ERA_BANNERS[era] || { sub: '', desc: '' };
   el.innerHTML = `
-    <div class="era-label">CHAPTER</div>
+    <div class="era-label">時代</div>
     <div class="era-title">${escapeHtml(era)}</div>
     <div class="era-sub">${escapeHtml(meta.sub)}</div>
     <div class="era-sub" style="color:#fff; font-size:16px; margin-top:8px;">${escapeHtml(meta.desc)}</div>
@@ -4374,7 +4374,20 @@ function tourGoTo(idx) {
     const titleEl = subEl.querySelector('.title');
     const descEl = subEl.querySelector('.desc');
     if (titleEl) titleEl.textContent = rec.site.label;
-    if (descEl) descEl.textContent = rec.site.notes ? rec.site.notes.slice(0, 80) + '...' : '';
+    if (descEl) {
+      const note = rec.site.notes || '';
+      // Break at first sentence boundary (。/．/!/?) within 30-130 chars
+      let display = '';
+      const endIdx = note.search(/[。．\?\!]/);
+      if (endIdx >= 30 && endIdx <= 130) {
+        display = note.slice(0, endIdx + 1);
+      } else if (note.length > 120) {
+        display = note.slice(0, 120) + '…';
+      } else {
+        display = note;
+      }
+      descEl.textContent = display;
+    }
     subEl.classList.remove('show');
     setTimeout(() => subEl.classList.add('show'), 50);
     // Auto-hide after 4s so it doesn't block too long
