@@ -73,6 +73,7 @@ PHASES = [
     ('phase57_axis_backfill.py','全 343 拠点に 4 軸タグを backfill(economy / judicial / radius / violence_eco)— 1,394 タグ links'),
     ('phase58_intl_links.py','国際接続線 44 本(ルフィ事件指示 / OFAC 制裁 / 山口組分裂 / 系譜 / 姉妹プロジェクト等)'),
     ('phase59_axis_gapfill.py','phase57 で軸欠落した 7 拠点を補完 — 4 軸カバー 100% 達成'),
+    ('phase60_more_axes.py','5 新軸追加(decade / weapon / media_exposure / org_size / designation_status)+ 343 拠点 backfill 100%'),
     ('dash5.py',               'render index.html'),
 ]
 

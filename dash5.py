@@ -1479,6 +1479,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   <span class="chip mode" data-mode="judicial">司法状態</span>
   <span class="chip mode" data-mode="radius">影響圏</span>
   <span class="chip mode" data-mode="violence_eco">暴力 vs 経済</span>
+  <span class="chip mode" data-mode="decade">年代</span>
+  <span class="chip mode" data-mode="weapon">手口</span>
+  <span class="chip mode" data-mode="media_exposure">報道度</span>
+  <span class="chip mode" data-mode="org_size">組織規模</span>
+  <span class="chip mode" data-mode="designation_status">規制</span>
   <span class="chip mode" data-mode="intl-link" title="国際接続線">🔗 接続線</span>
   <span class="sep">│</span>
   <span class="lbl">派閥フィルタ:</span>
