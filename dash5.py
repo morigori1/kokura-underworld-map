@@ -865,6 +865,69 @@ HTML_TEMPLATE = r"""<!doctype html>
     fill:var(--accent2); font-size:8.5px; font-weight:700;
   }
 
+  /* ===== Big year ticker (auto-play / scrub overlay) ===== */
+  #year-ticker {
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:1750; pointer-events:none;
+    font-size:160px; font-weight:900; letter-spacing:0.04em;
+    color:rgba(255,255,255,0.10);
+    text-shadow:0 0 30px rgba(0,0,0,0.8);
+    opacity:0; transition:opacity 0.3s, font-size 0.3s;
+    font-family:-apple-system, sans-serif;
+    user-select:none;
+  }
+  #year-ticker.show { opacity:1; }
+
+  /* ===== Era chapter banner (full-screen during chronological tour) ===== */
+  #era-banner {
+    position:fixed; inset:0; z-index:1850;
+    display:none; pointer-events:none;
+    background:radial-gradient(circle, rgba(13,15,18,0.85) 0%, rgba(13,15,18,0.95) 100%);
+    align-items:center; justify-content:center;
+    flex-direction:column;
+    opacity:0; transition:opacity 0.5s;
+  }
+  #era-banner.show { display:flex; opacity:1; pointer-events:auto; }
+  #era-banner .era-label {
+    color:rgba(255,255,255,0.4); font-size:13px; letter-spacing:0.3em;
+    margin-bottom:14px;
+  }
+  #era-banner .era-title {
+    color:#fff; font-size:64px; font-weight:900;
+    letter-spacing:0.08em; text-shadow:0 0 30px rgba(217,83,79,0.5);
+    text-align:center;
+  }
+  #era-banner .era-sub {
+    color:var(--accent2); font-size:18px; margin-top:14px;
+    letter-spacing:0.1em;
+  }
+  @media (max-width: 720px) {
+    #era-banner .era-title { font-size:42px; }
+    #year-ticker { font-size:100px; }
+  }
+
+  /* ===== Spotlight halo for important sites ===== */
+  .pin-halo-special {
+    position:relative;
+  }
+  .pin-halo-special::before {
+    content:''; position:absolute; inset:-8px;
+    border-radius:50%; pointer-events:none;
+    box-shadow:0 0 0 2px var(--accent2), 0 0 16px var(--accent2);
+    animation:halo-pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes halo-pulse {
+    0%, 100% { box-shadow:0 0 0 2px var(--accent2), 0 0 16px rgba(241,196,15,0.5); }
+    50%      { box-shadow:0 0 0 5px var(--accent2), 0 0 32px rgba(241,196,15,0.9); }
+  }
+
+  /* ===== Connection spotlight (when site selected) ===== */
+  .link-dimmed { opacity:0.12 !important; }
+  .link-highlighted {
+    stroke-width:4 !important; opacity:0.95 !important;
+    filter:drop-shadow(0 0 8px var(--accent2));
+  }
+
   /* ===== Decade scrubbing slider ===== */
   #decade-slider-wrap {
     position:absolute; bottom:160px; left:354px; right:12px;
@@ -1572,9 +1635,16 @@ HTML_TEMPLATE = r"""<!doctype html>
 <div id="decade-slider-wrap">
   <span class="lbl">⏳ 年代スクラブ:</span>
   <span class="decade-display" id="decade-display">全期間</span>
+  <button id="decade-play" type="button" title="自動再生" style="background:var(--accent2); color:#000; border:none; padding:2px 8px; border-radius:3px; font-size:11px; font-weight:700; cursor:pointer; margin-right:6px;">▶</button>
   <input type="range" id="decade-slider" min="0" max="10" step="1" value="10">
-  <button id="decade-reset" type="button" style="background:var(--accent); color:#fff; border:none; padding:2px 8px; border-radius:3px; font-size:10px; cursor:pointer;">リセット</button>
+  <button id="decade-reset" type="button" style="background:var(--accent); color:#fff; border:none; padding:2px 8px; border-radius:3px; font-size:10px; cursor:pointer; margin-left:6px;">リセット</button>
 </div>
+
+<!-- Big year ticker (during auto-play / scrub) -->
+<div id="year-ticker"></div>
+
+<!-- Era chapter banner (during chronological tour) -->
+<div id="era-banner"></div>
 
 <div id="side">
   <button class="close-side" type="button" onclick="document.getElementById('side').classList.remove('open')" aria-label="閉じる">✕</button>
@@ -2183,6 +2253,17 @@ function getSiteOpacity(s) {
 
 // ===== Plot site markers =====
 const siteIndex = {};
+function isSpecialSite(s) {
+  // Halo treatment for OFAC TCO / 特定危険指定 / 大規模指定暴力団 / 国際多重報道
+  if (!s.tags) return false;
+  for (const t of s.tags) {
+    if (t.axis === 'designation_status' &&
+        (t.value === '特定危険指定暴力団' || t.value === 'OFAC TCO指定')) return true;
+    if (t.axis === 'media_exposure' && t.value === '国際多重報道') return true;
+    if (t.axis === 'org_size' && t.value === '大規模指定暴力団') return true;
+  }
+  return false;
+}
 function makeMarker(s) {
   const size = getSiteSize(s);
   const opacity = getSiteOpacity(s);
@@ -2190,7 +2271,8 @@ function makeMarker(s) {
   // Special: trigger pulse for severity-5 attack sites
   const maxSev = (s.events || []).reduce((a,e) => Math.max(a, e.severity || 1), 1);
   const pulseClass = (maxSev >= 5 && s.kind === 'attack_site') ? ' pin-pulse' : '';
-  const html = `<div class="pin${pulseClass}" style="width:${size}px; height:${size}px; background:${color}; opacity:${opacity};"></div>`;
+  const haloClass = isSpecialSite(s) ? ' pin-halo-special' : '';
+  const html = `<div class="pin${pulseClass}${haloClass}" style="width:${size}px; height:${size}px; background:${color}; opacity:${opacity};"></div>`;
   const icon = L.divIcon({ className: '', html, iconSize: [size, size] });
   return L.marker([s.lat, s.lon], { icon, title: s.label });
 }
@@ -2446,6 +2528,8 @@ function openDetail(slug) {
   detailBody.innerHTML = html.join('\n');
   detailEl.classList.add('open');
   document.body.classList.add('detail-open');
+  // Spotlight any connections for this site
+  if (s.slug && linksVisible) spotlightConnections(s.slug);
 
   const slider = document.getElementById('wb-slider');
   if (slider && s.imagery.length) {
@@ -2943,20 +3027,128 @@ function applyDecadeFilter() {
     }
   }
 }
+// === Year ticker overlay ===
+let yearTickerTimer = null;
+function showYearTicker(text, dur = 1500) {
+  const t = document.getElementById('year-ticker');
+  if (!t) return;
+  t.textContent = text;
+  t.classList.add('show');
+  if (yearTickerTimer) clearTimeout(yearTickerTimer);
+  yearTickerTimer = setTimeout(() => {
+    t.classList.remove('show');
+  }, dur);
+}
+
+// === Decade auto-play ===
+let autoPlayTimer = null;
+function startAutoPlay() {
+  const slider = document.getElementById('decade-slider');
+  const playBtn = document.getElementById('decade-play');
+  if (!slider) return;
+  if (autoPlayTimer) { stopAutoPlay(); return; }
+  playBtn.textContent = '⏸';
+  let idx = parseInt(slider.value);
+  if (idx === 10) idx = 0;
+  function step() {
+    if (idx > 10) { stopAutoPlay(); return; }
+    slider.value = idx;
+    decadeFilter = idx === 10 ? null : idx;
+    applyDecadeFilter();
+    if (decadeFilter != null) {
+      showYearTicker(DECADES[decadeFilter], 1000);
+    } else {
+      showYearTicker('全期間', 800);
+    }
+    idx++;
+    autoPlayTimer = setTimeout(step, 1200);
+  }
+  step();
+}
+function stopAutoPlay() {
+  if (autoPlayTimer) clearTimeout(autoPlayTimer);
+  autoPlayTimer = null;
+  const playBtn = document.getElementById('decade-play');
+  if (playBtn) playBtn.textContent = '▶';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const slider = document.getElementById('decade-slider');
   const reset = document.getElementById('decade-reset');
+  const play = document.getElementById('decade-play');
   if (slider) slider.oninput = () => {
+    stopAutoPlay();
     decadeFilter = parseInt(slider.value);
     if (decadeFilter === 10) decadeFilter = null;
     applyDecadeFilter();
+    if (decadeFilter != null) showYearTicker(DECADES[decadeFilter], 800);
   };
   if (reset) reset.onclick = () => {
+    stopAutoPlay();
     decadeFilter = null;
     if (slider) slider.value = 10;
     applyDecadeFilter();
   };
+  if (play) play.onclick = startAutoPlay;
 });
+
+// === Era chapter banner (during chronological tour) ===
+const ERA_BANNERS = {
+  '戦後闇市':  { sub: '1945-1955', desc: '焼け跡から組織が生まれる' },
+  '高度成長':  { sub: '1956-1991', desc: '街と組織が同時に巨大化' },
+  '平成抗争':  { sub: '1992-2005', desc: '暴対法と血の応酬' },
+  '頂上作戦':  { sub: '2006-2024', desc: '組織のトップを首謀者として立てる' },
+  '解体後':    { sub: '2019-現在', desc: '指定暴力団からトクリュウへ' },
+};
+let eraBannerTimer = null;
+function showEraBanner(era, dur = 2500) {
+  const el = document.getElementById('era-banner');
+  if (!el || !era) return;
+  const meta = ERA_BANNERS[era] || { sub: '', desc: '' };
+  el.innerHTML = `
+    <div class="era-label">CHAPTER</div>
+    <div class="era-title">${escapeHtml(era)}</div>
+    <div class="era-sub">${escapeHtml(meta.sub)}</div>
+    <div class="era-sub" style="color:#fff; font-size:16px; margin-top:8px;">${escapeHtml(meta.desc)}</div>
+  `;
+  el.classList.add('show');
+  if (eraBannerTimer) clearTimeout(eraBannerTimer);
+  eraBannerTimer = setTimeout(() => el.classList.remove('show'), dur);
+}
+window.showEraBanner = showEraBanner;
+
+// === Connection spotlight (when a site is clicked) ===
+let lastSpotlightSlug = null;
+function spotlightConnections(slug) {
+  if (!linkLines.length) return;  // Links not visible
+  // If clicking same site again, reset
+  if (lastSpotlightSlug === slug) {
+    for (const line of linkLines) {
+      const el = line._path;
+      if (el) {
+        el.classList.remove('link-dimmed');
+        el.classList.remove('link-highlighted');
+      }
+    }
+    lastSpotlightSlug = null;
+    return;
+  }
+  lastSpotlightSlug = slug;
+  for (const line of linkLines) {
+    const sl = line._sl;
+    if (!sl) continue;
+    const el = line._path;
+    if (!el) continue;
+    if (sl.from_slug === slug || sl.to_slug === slug) {
+      el.classList.add('link-highlighted');
+      el.classList.remove('link-dimmed');
+    } else {
+      el.classList.add('link-dimmed');
+      el.classList.remove('link-highlighted');
+    }
+  }
+}
+window.spotlightConnections = spotlightConnections;
 
 // ===== Site link rendering (国際接続線) =====
 const LINK_KIND_COLOR = {
@@ -2988,6 +3180,7 @@ function drawLinks() {
     ).addTo(map);
     line.bindTooltip(`<b>${sl.kind}</b><br>${escapeHtml(sl.note || '')}`,
                      { permanent: false, direction: 'center' });
+    line._sl = sl;  // store for spotlight lookup
     linkLines.push(line);
   }
 }
@@ -3526,8 +3719,16 @@ function tourGoTo(idx) {
   if (idx < 0 || idx >= tour.steps.length) { tourHide(); return; }
   tour.idx = idx;
   const step = tour.steps[idx];
-  if (step.banner) showBanner(step.banner, 3000);
+  // Check if this step changes era — show era banner
   const rec = siteIndex[step.slug];
+  if (rec) {
+    const currentEra = rec.site.era_tag;
+    if (currentEra && currentEra !== tour.lastEra) {
+      tour.lastEra = currentEra;
+      showEraBanner(currentEra, 2200);
+    }
+  }
+  if (step.banner) showBanner(step.banner, 3000);
   if (rec) {
     map.flyTo([rec.site.lat, rec.site.lon], 17, { duration: 1.6 });
     setTimeout(() => openDetail(step.slug), 1700);
@@ -3545,6 +3746,7 @@ function startTour(steps) {
   tour.steps = steps;
   tour.idx = 0;
   tour.paused = false;
+  tour.lastEra = null;  // reset era tracking for fresh chapter banners
   document.body.classList.add('tour-active');
   // close tour menu if open
   document.getElementById('tour-menu')?.classList.remove('show');
