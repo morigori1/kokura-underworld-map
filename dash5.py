@@ -5024,7 +5024,8 @@ function runChronTour() {
       steps.push({ slug, banner: i === 0 ? act.banner : null });
     });
   }
-  startTour(steps);
+  // Chronological 5-act tour — era chapter banners enabled
+  startTour(steps, { chronological: true });
 }
 
 function runGossipTour() {
@@ -5034,14 +5035,16 @@ function runGossipTour() {
     'tanaka_gumi_offshoot', 'philippines_luffy_base', 'kanto_rengo_ob_network',
   ];
   const steps = slugs.map((s, i) => ({ slug: s, banner: i === 0 ? '🟡 ゴシップ層 ─ 報道書籍と軼話で巡る' : null }));
-  startTour(steps);
+  // Gossip tour is thematic, not chronological — no era banners
+  startTour(steps, { chronological: false });
 }
 
 function runCases4Tour() {
   const slugs = ['attack_1998_ashiya_fisheries', 'attack_2012_ex_officer',
                  'attack_2013_nurse', 'attack_2014_dentist'];
   const steps = slugs.map((s, i) => ({ slug: s, banner: i === 0 ? '市民襲撃4事件 — 頂上作戦の起訴対象' : null }));
-  startTour(steps);
+  // 4 cases are case-based (not strict chronological) — no era banners
+  startTour(steps, { chronological: false });
 }
 </script>
 
