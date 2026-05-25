@@ -4076,7 +4076,7 @@ function _appendTourSearchIndex() {
       searchIndex.push({
         type: 'tour', ico: '🎬', label: t.title, sub: cat.name + ' / ' + t.steps.length + ' steps',
         extra: t.desc || '',
-        onclick: () => startTour(t.steps),
+        onclick: () => startTour(t.steps, { chronological: !!t.chronological }),
       });
     }
   }
@@ -4354,9 +4354,10 @@ function tourGoTo(idx) {
   if (idx < 0 || idx >= tour.steps.length) { tourHide(); return; }
   tour.idx = idx;
   const step = tour.steps[idx];
-  // Check if this step changes era — show era banner
+  // Era banner only fires for chronological tours (era progresses in order).
+  // Geographic / thematic tours suppress it to avoid flashing back and forth.
   const rec = siteIndex[step.slug];
-  if (rec) {
+  if (rec && tour.chronological) {
     const currentEra = rec.site.era_tag;
     if (currentEra && currentEra !== tour.lastEra) {
       tour.lastEra = currentEra;
@@ -4406,12 +4407,13 @@ function tourGoTo(idx) {
     }, tour.stepDurationMs);
   }
 }
-function startTour(steps) {
+function startTour(steps, opts = {}) {
   tourClearTimer();
   tour.steps = steps;
   tour.idx = 0;
   tour.paused = false;
   tour.lastEra = null;  // reset era tracking for fresh chapter banners
+  tour.chronological = !!opts.chronological;
   document.body.classList.add('tour-active');
   // close tour menu if open
   document.getElementById('tour-menu')?.classList.remove('show');
@@ -4438,7 +4440,7 @@ const TOUR_CATEGORIES = [
           { slug: 'kokura_bouhai_office' },
           { slug: 'kitakyushu_city_council' },
         ]},
-      { id: 'chron_5acts', title: '系譜順 5幕(戦後→解体後)', desc: '1901 八幡製鐵所→2024 控訴審まで全 19 ステップ',
+      { id: 'chron_5acts', chronological: true, title: '系譜順 5幕(戦後→解体後)', desc: '1901 八幡製鐵所→2024 控訴審まで全 19 ステップ',
         steps: [
           { slug: 'yawata_seitetsu_1901', banner: '第1幕 ─ 重工業都市の前史(1901-)' },
           { slug: 'kokura_yamiichi_1946' },
@@ -4471,7 +4473,7 @@ const TOUR_CATEGORIES = [
           { slug: 'kudokai_hq_kandake' },
           { slug: 'kokura_district_court' },
         ]},
-      { id: 'kudokai_legal', title: '頂上作戦から OFAC まで(法制度)', desc: '2014 逮捕→2024 控訴審 + 国際金融制裁',
+      { id: 'kudokai_legal', chronological: true, title: '頂上作戦から OFAC まで(法制度)', desc: '2014 逮捕→2024 控訴審 + 国際金融制裁',
         steps: [
           { slug: 'fukuoka_kenkei', banner: '頂上作戦 — 県警組織犯罪対策課' },
           { slug: 'kudokai_hq_kandake' },
@@ -4483,7 +4485,7 @@ const TOUR_CATEGORIES = [
           { slug: 'tokyo_us_embassy' },
           { slug: 'fukuoka_pref_assembly' },
         ]},
-      { id: 'after_demolish', title: '解体後の街 + 暴排運動', desc: '本部跡・旦過火災・市民側の街づくり',
+      { id: 'after_demolish', chronological: true, title: '解体後の街 + 暴排運動', desc: '本部跡・旦過火災・市民側の街づくり',
         steps: [
           { slug: 'kudokai_hq_kandake', banner: '2019-07-04 解体着工日' },
           { slug: 'kandake_intersection' },
@@ -4529,7 +4531,7 @@ const TOUR_CATEGORIES = [
           { slug: 'kurume_keisatsu' },
           { slug: 'kurume_shrine_temple' },
         ]},
-      { id: 'kyushu_war', title: '九州抗争 2006-2013 全 10 ステップ', desc: '7年間の地理的拡散と市民生活への影響',
+      { id: 'kyushu_war', chronological: true, title: '九州抗争 2006-2013 全 10 ステップ', desc: '7年間の地理的拡散と市民生活への影響',
         steps: [
           { slug: 'kurume_seidokai_hq', banner: '九州抗争 — 2006 道仁会内紛から' },
           { slug: 'kurume_bunkagai_central' },
@@ -4557,7 +4559,7 @@ const TOUR_CATEGORIES = [
     name: '山口組史 / 神戸',
     color: '#8e44ad',
     tours: [
-      { id: 'yamaguchi_110years', title: '山口組 110 年史 全 10 ステップ', desc: '1915 結成→田岡→山一抗争→神戸分裂→絆會',
+      { id: 'yamaguchi_110years', chronological: true, title: '山口組 110 年史 全 10 ステップ', desc: '1915 結成→田岡→山一抗争→神戸分裂→絆會',
         steps: [
           { slug: 'kobe_yamaguchi_origin', banner: '1915 山口春吉 神戸港' },
           { slug: 'kobe_yamaguchi_souhonbu' },
@@ -4570,7 +4572,7 @@ const TOUR_CATEGORIES = [
           { slug: 'kobe_kizunakai_hq' },
           { slug: 'hyogo_keisatsu_hq' },
         ]},
-      { id: 'yamaichi_war', title: '山一抗争 1985-1989 + 暴対法成立', desc: '5 年 300 事件 → 1991 暴対法の最大背景',
+      { id: 'yamaichi_war', chronological: true, title: '山一抗争 1985-1989 + 暴対法成立', desc: '5 年 300 事件 → 1991 暴対法の最大背景',
         steps: [
           { slug: 'kobe_yamaichi_ground_zero', banner: '山一抗争 — 1985-08-27 分裂から' },
           { slug: 'kobe_yamaguchi_souhonbu' },
@@ -4580,7 +4582,7 @@ const TOUR_CATEGORIES = [
           { slug: 'tokyo_diet_again' },
           { slug: 'kokkai_diet_tokyo' },
         ]},
-      { id: 'kobe_split', title: '神戸山口組分裂 2015-2024 全 8 ステップ', desc: '六代目→神戸→任侠→絆會 三派対立から特定抗争指定解除まで',
+      { id: 'kobe_split', chronological: true, title: '神戸山口組分裂 2015-2024 全 8 ステップ', desc: '六代目→神戸→任侠→絆會 三派対立から特定抗争指定解除まで',
         steps: [
           { slug: 'kobe_yamaguchi_souhonbu', banner: '2015 神戸山口組分裂' },
           { slug: 'kobe_kobeyamaguchigumi_hq' },
@@ -4768,7 +4770,7 @@ const TOUR_CATEGORIES = [
     name: '反社規制と金融',
     color: '#3498db',
     tours: [
-      { id: 'regulation_30y', title: '反社規制 30 年史(1991→2024)', desc: '暴対法→特定危険指定→OFAC→金融→トクリュウ対策',
+      { id: 'regulation_30y', chronological: true, title: '反社規制 30 年史(1991→2024)', desc: '暴対法→特定危険指定→OFAC→金融→トクリュウ対策',
         steps: [
           { slug: 'tokyo_diet_again', banner: '反社規制 30 年 — 1991 暴対法から' },
           { slug: 'kokkai_diet_tokyo' },
@@ -4782,7 +4784,7 @@ const TOUR_CATEGORIES = [
           { slug: 'bouhai_center_fukuoka' },
           { slug: 'npa_tokuryu_office' },
         ]},
-      { id: 'finance_war', title: '金融・反社対応の30年', desc: '2007 指針→2011 標準化→2013 みずほ→2018 暗号資産→2024 トクリュウ',
+      { id: 'finance_war', chronological: true, title: '金融・反社対応の30年', desc: '2007 指針→2011 標準化→2013 みずほ→2018 暗号資産→2024 トクリュウ',
         steps: [
           { slug: 'zenginkyo_compliance', banner: '銀行業界 反社対応 30 年' },
           { slug: 'mizuho_bank_hq' },
@@ -4798,7 +4800,7 @@ const TOUR_CATEGORIES = [
     name: '歴史・カルチャー',
     color: '#f1c40f',
     tours: [
-      { id: 'postwar_yamiichi', title: '戦後闇市 1945-1955 全 9 ステップ', desc: '原爆代替標的→闇市→三国人事件→草野一家',
+      { id: 'postwar_yamiichi', chronological: true, title: '戦後闇市 1945-1955 全 9 ステップ', desc: '原爆代替標的→闇市→三国人事件→草野一家',
         steps: [
           { slug: 'kokura_air_raid_1945', banner: '戦後闇市 — 1945-08-09 から' },
           { slug: 'kokura_yamiichi_1946' },
@@ -4832,7 +4834,7 @@ const TOUR_CATEGORIES = [
           { slug: 'yawata_iron_works_area' },
           { slug: 'moji_kanmon_line' },
         ]},
-      { id: 'sengo_kosei', title: '戦後初期抗争(1946-1965)', desc: '三国人事件→本多会抗争→山口組全国化',
+      { id: 'sengo_kosei', chronological: true, title: '戦後初期抗争(1946-1965)', desc: '三国人事件→本多会抗争→山口組全国化',
         steps: [
           { slug: 'postwar_sanguokujin', banner: '戦後初期抗争 1946-1965' },
           { slug: 'kokura_yamiichi_1946' },
@@ -4847,7 +4849,7 @@ const TOUR_CATEGORIES = [
     name: 'テーマ深掘り',
     color: '#27ae60',
     tours: [
-      { id: 'economy_bubble', title: '経済ヤクザ・バブル期', desc: '地上げ→住専→阪神大震災→みずほ事件',
+      { id: 'economy_bubble', chronological: true, title: '経済ヤクザ・バブル期', desc: '地上げ→住専→阪神大震災→みずほ事件',
         steps: [
           { slug: 'bubble_jiage', banner: '経済ヤクザ — バブル期から平成不良債権' },
           { slug: 'jusen_jutaku' },
@@ -4880,7 +4882,7 @@ const TOUR_CATEGORIES = [
           { slug: 'sumo_yaocho_2011' },
           { slug: 'koshienjo_yakuza' },
         ]},
-      { id: 'drug_economy', title: '薬物経済 — 戦後70年史', desc: 'ヒロポン→指定暴力団→危険ドラッグ→SNS流通',
+      { id: 'drug_economy', chronological: true, title: '薬物経済 — 戦後70年史', desc: 'ヒロポン→指定暴力団→危険ドラッグ→SNS流通',
         steps: [
           { slug: 'hiropon_first_wave', banner: '薬物経済 — 戦後 70 年' },
           { slug: 'hiropon_second_wave' },
@@ -4965,7 +4967,7 @@ function renderTourMenu() {
         <div class="ttl">${escapeHtml(t.title)}</div>
         <div class="desc">${escapeHtml(t.desc)}</div>
         <div class="stops">▶ ${t.steps.length} ステップ</div>`;
-      card.onclick = () => { startTour(t.steps); };
+      card.onclick = () => { startTour(t.steps, { chronological: !!t.chronological }); };
       grid.appendChild(card);
     }
     sec.appendChild(grid);
