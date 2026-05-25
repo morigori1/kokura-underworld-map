@@ -117,6 +117,8 @@ def main():
     HAS_TESTIMONY = has_table(cur, 'testimony')
     HAS_LIFE      = has_table(cur, 'life_snippet')
     HAS_LMED      = has_table(cur, 'local_media')
+    HAS_TAG       = has_table(cur, 'tag')
+    HAS_LINK      = has_table(cur, 'site_link')
     HAS_NARR      = has_table(cur, 'narration')
     HAS_ERA       = has_table(cur, 'era_caption')
     HAS_IMGRES    = has_table(cur, 'image_resource')
@@ -225,7 +227,42 @@ def main():
             'imagery': imagery, 'poi': poi, 'testimony': testimony,
             'life': life, 'images': images, 'lore': lore,
             'local_media': local_media,
+            'tags': [],  # 下で site_id 別に backfill
         })
+
+    # Backfill tags per site for color modes + filters
+    if HAS_TAG:
+        rows = cur.execute("""
+            SELECT st.site_id, t.axis, t.value, t.color
+            FROM site_tag st JOIN tag t ON st.tag_id = t.id
+        """).fetchall()
+        # site_id → list of {axis, value, color}
+        site_by_id = {s['id']: s for s in sites}
+        for sid, axis, value, color in rows:
+            s = site_by_id.get(sid)
+            if s:
+                s['tags'].append({'axis': axis, 'value': value, 'color': color})
+
+    # Tag palette for color modes
+    tag_dict = []
+    if HAS_TAG:
+        tag_dict = fetch_dicts(cur, """
+            SELECT axis, value, label_ja, label_en, color, ord
+            FROM tag ORDER BY axis, ord
+        """)
+
+    # site_link for line rendering
+    site_links = []
+    if HAS_LINK:
+        site_links = fetch_dicts(cur, """
+            SELECT sl.kind, sl.note,
+                   s1.slug AS from_slug, s1.rep_lat AS from_lat, s1.rep_lon AS from_lon,
+                   s2.slug AS to_slug,   s2.rep_lat AS to_lat,   s2.rep_lon AS to_lon
+            FROM site_link sl
+            JOIN site s1 ON sl.from_site_id = s1.id
+            JOIN site s2 ON sl.to_site_id   = s2.id
+            WHERE s1.rep_lat IS NOT NULL AND s2.rep_lat IS NOT NULL
+        """)
 
     chronicle = fetch_dicts(cur, """
         SELECT ord, year_label AS year, title, body, era_tag, faction_tag
@@ -345,6 +382,8 @@ def main():
         'persons': persons,
         'crime_stats': crime_stats,
         'org_tree': org_tree,
+        'tag_dict': tag_dict,
+        'site_links': site_links,
     }
 
     html = HTML_TEMPLATE.replace('__PAYLOAD__', json.dumps(payload, ensure_ascii=False))
@@ -1436,6 +1475,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   <span class="chip mode active" data-mode="kind">種別</span>
   <span class="chip mode" data-mode="faction">派閥</span>
   <span class="chip mode" data-mode="era">時代</span>
+  <span class="chip mode" data-mode="economy">資金源</span>
+  <span class="chip mode" data-mode="judicial">司法状態</span>
+  <span class="chip mode" data-mode="radius">影響圏</span>
+  <span class="chip mode" data-mode="violence_eco">暴力 vs 経済</span>
+  <span class="chip mode" data-mode="intl-link" title="国際接続線">🔗 接続線</span>
   <span class="sep">│</span>
   <span class="lbl">派閥フィルタ:</span>
   <span id="faction-chips"></span>
@@ -1987,11 +2031,27 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) { return escapeHtml(s).replace(/'/g, ''); }
 
+// Build tag palette index: axis → value → color
+const TAG_BY_AXIS = {};
+for (const t of (DATA.tag_dict || [])) {
+  if (!TAG_BY_AXIS[t.axis]) TAG_BY_AXIS[t.axis] = {};
+  TAG_BY_AXIS[t.axis][t.value] = t.color || '#9aa6b2';
+}
+
 function colorFor(thing, fallbackKind) {
   if (colorMode === 'faction' && thing.faction_tag && FACTION[thing.faction_tag])
     return FACTION[thing.faction_tag];
   if (colorMode === 'era' && thing.era_tag && ERA[thing.era_tag])
     return ERA[thing.era_tag];
+  // Tag-based color modes (economy / judicial / radius / violence_eco)
+  if (TAG_BY_AXIS[colorMode] && thing.tags) {
+    // First matching tag for the active axis wins
+    for (const t of thing.tags) {
+      if (t.axis === colorMode && TAG_BY_AXIS[colorMode][t.value]) {
+        return TAG_BY_AXIS[colorMode][t.value];
+      }
+    }
+  }
   // kind fallback
   const k = thing.kind || fallbackKind;
   return KIND[k] || '#9aa6b2';
@@ -2635,11 +2695,52 @@ function applyAllFilters() {
   }
 }
 
+// ===== Site link rendering (国際接続線) =====
+const LINK_KIND_COLOR = {
+  tokuryu_intl:         '#ff6b35',  // ルフィ事件指示
+  sanction:             '#3498db',  // OFAC / 規制
+  compound_route:       '#9b59b6',  // メコンコンパウンド
+  split:                '#e74c3c',  // 山口組分裂
+  origin:               '#27ae60',  // 系譜
+  fugitive_intl:        '#f39c12',  // 国際逃亡
+  intl_comparison:      '#16a085',  // 国際比較
+  split_after_takedown: '#d9534f',  // 摘発後分散
+  drug_route:           '#7f8c8d',  // 薬物ルート
+  sister_proj:          '#1abc9c',  // 姉妹プロジェクト
+};
+let linkLines = [];     // 描画中の Leaflet polyline
+let linksVisible = false;
+function clearLinks() {
+  for (const l of linkLines) map.removeLayer(l);
+  linkLines = [];
+}
+function drawLinks() {
+  clearLinks();
+  if (!DATA.site_links) return;
+  for (const sl of DATA.site_links) {
+    const color = LINK_KIND_COLOR[sl.kind] || '#9aa6b2';
+    const line = L.polyline(
+      [[sl.from_lat, sl.from_lon], [sl.to_lat, sl.to_lon]],
+      { color: color, weight: 2, opacity: 0.6, dashArray: '5,8' }
+    ).addTo(map);
+    line.bindTooltip(`<b>${sl.kind}</b><br>${escapeHtml(sl.note || '')}`,
+                     { permanent: false, direction: 'center' });
+    linkLines.push(line);
+  }
+}
+
 // ===== Mode bar =====
 function setMode(m) {
   colorMode = m;
   document.querySelectorAll('#modebar .chip.mode').forEach(c =>
     c.classList.toggle('active', c.dataset.mode === m));
+  // Special mode: intl-link toggles link visibility, doesn't change colors
+  if (m === 'intl-link') {
+    linksVisible = !linksVisible;
+    if (linksVisible) drawLinks(); else clearLinks();
+    // Re-select previous color mode for chip display
+    return;
+  }
   refreshMarkers();
   // re-render event card borders too
   for (const c of evCards) {

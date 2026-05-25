@@ -69,6 +69,9 @@ PHASES = [
     ('phase53_regional_chaos.py','全国主要都市+マニラに街色拠点を展開(神戸/大阪/京都/名古屋/東京/福岡/久留米/那覇/マニラ — 46 新規拠点)'),
     ('phase54_hangure_intl_chaos.py','反グレ周辺(西麻布・六本木ヒルズ・麻布十番・池袋北口・西葛西・川口)+ 海外トクリュウ拠点(マニラ Makati・Quiapo・BGC / プノンペン王宮・BKK1・シハヌークビル / ヤンゴン旧市街・KK Park / バンコク・パタヤ / ハノイ・ホーチミン / ヴィエンチャン / 釜山・梨泰院・江南 / 旺角・湾仔)— 27 新規'),
     ('phase55_provenance.py','provenance 列追加(created_by / created_at / verified_by / verified_at)— 全コンテンツの LLM 生成 vs 人間検証済を schema レベルで分離'),
+    ('phase56_axes_schema.py','5 軸追加 schema(tag / site_tag / site_link テーブル + 35 canonical タグ)'),
+    ('phase57_axis_backfill.py','全 343 拠点に 4 軸タグを backfill(economy / judicial / radius / violence_eco)— 1,394 タグ links'),
+    ('phase58_intl_links.py','国際接続線 44 本(ルフィ事件指示 / OFAC 制裁 / 山口組分裂 / 系譜 / 姉妹プロジェクト等)'),
     ('dash5.py',               'render index.html'),
 ]
 
