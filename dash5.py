@@ -480,16 +480,25 @@ HTML_TEMPLATE = r"""<!doctype html>
                letter-spacing: 0.005em;
                overflow:hidden; }
   #map { position:absolute; inset:0; background:var(--bg); }
-  /* Cinematic vignette overlay */
+  /* Cinematic vignette overlay (era-aware color tint via CSS variables) */
   #map::after {
     content: '';
     position: absolute; inset: 0;
     pointer-events: none; z-index: 1;
-    background: radial-gradient(ellipse at center,
-      rgba(0,0,0,0) 30%,
-      rgba(0,0,0,0.35) 75%,
-      rgba(0,0,0,0.6) 100%);
+    background:
+      var(--era-tint, transparent),
+      radial-gradient(ellipse at center,
+        rgba(0,0,0,0) 30%,
+        rgba(0,0,0,0.35) 75%,
+        rgba(0,0,0,0.6) 100%);
+    transition: background 1.2s var(--ease-elegant);
   }
+  /* Era color tints — subtle wash applied during chronological tours */
+  body.era-postwar  { --era-tint: linear-gradient(180deg, rgba(120,80,40,0.10), rgba(60,40,20,0.05)); }
+  body.era-growth   { --era-tint: linear-gradient(180deg, rgba(80,100,60,0.07), rgba(40,60,40,0.04)); }
+  body.era-heisei   { --era-tint: linear-gradient(180deg, rgba(100,60,60,0.08), rgba(70,30,40,0.05)); }
+  body.era-apex     { --era-tint: linear-gradient(180deg, rgba(60,80,120,0.07), rgba(30,40,80,0.05)); }
+  body.era-dismantled { --era-tint: linear-gradient(180deg, rgba(120,80,40,0.05), rgba(70,40,50,0.04)); }
   a { color:var(--accent3); text-decoration:none; transition: color 0.18s; }
   a:hover { color:var(--accent2-bright); }
   /* Custom scrollbars — minimal, refined */
@@ -536,8 +545,14 @@ HTML_TEMPLATE = r"""<!doctype html>
     color:var(--ink-dim); font-size:10.5px; margin-top:2px;
     letter-spacing:0.12em; text-transform:uppercase; opacity:0.7;
   }
-  #topbar .stats { margin-left:auto; display:flex; gap:14px; font-size:12px; color:var(--ink-dim); }
-  #topbar .stats b { color:var(--accent2); }
+  #topbar .stats {
+    margin-left:auto; display:flex; gap:14px; font-size:12px; color:var(--ink-dim);
+    font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1;
+  }
+  #topbar .stats b {
+    color:var(--accent2); font-weight:700;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
 
   /* ===== Global search bar ===== */
   #search-wrap {
@@ -768,16 +783,80 @@ HTML_TEMPLATE = r"""<!doctype html>
   #detail.open { transform: translateX(0); }
   #detail .close { float:right; cursor:pointer; color:var(--ink-dim); font-size:18px; padding:2px 8px; }
   #detail .close:hover { color:var(--accent); }
-  #detail h2 { margin:0 0 4px; color:var(--accent2); font-size:18px; }
-  #detail .meta { color:var(--ink-dim); font-size:12px; margin-bottom:14px; }
+  #detail h2 {
+    margin:0 0 6px; color:var(--ink-bright);
+    font-family:var(--font-display); font-size:22px;
+    letter-spacing:0.02em; line-height:1.3;
+  }
+  #detail .meta {
+    color:var(--ink-dim); font-size:11.5px; margin-bottom:14px;
+    letter-spacing:0.04em;
+    font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1;
+  }
   #detail .badges { margin:6px 0 14px; }
-  #detail .image { margin:12px 0; }
-  #detail .image img { width:100%; border-radius:6px; display:block; }
-  #detail .image .cap { font-size:11px; color:var(--ink-dim); margin-top:4px; line-height:1.4; }
-  #detail h3 { font-size:11px; color:var(--accent2); margin:18px 0 8px;
-               letter-spacing:0.08em; text-transform:uppercase; }
-  #detail .narr p { font-size:13px; line-height:1.75; margin:0 0 12px; }
-  #detail .narr .nt { font-weight:600; color:var(--ink); margin:8px 0 4px; font-size:13px; }
+
+  /* Editorial-grade detail image: duotone hint + caption */
+  #detail .image { margin:14px 0; position:relative; }
+  #detail .image img {
+    width:100%; border-radius:4px; display:block;
+    filter: grayscale(0.35) contrast(1.05) saturate(0.85);
+    transition: filter 0.4s var(--ease-out);
+  }
+  #detail .image:hover img { filter: none; }
+  /* Red duotone overlay (subtle, magazine-style) */
+  #detail .image::after {
+    content:''; position:absolute; top:0; left:0; right:0;
+    height:calc(100% - 28px);
+    background:linear-gradient(135deg, rgba(196,58,55,0.08) 0%, rgba(7,9,12,0.04) 100%);
+    mix-blend-mode:multiply; pointer-events:none;
+    border-radius:4px; opacity:1; transition:opacity 0.4s var(--ease-out);
+  }
+  #detail .image:hover::after { opacity:0; }
+  #detail .image .cap {
+    font-size:10.5px; color:var(--ink-dim); margin-top:6px;
+    line-height:1.55; font-style:italic;
+    border-left:2px solid var(--gold);
+    padding-left:8px;
+  }
+
+  /* Editorial section headers (gold accent rule + small caps) */
+  #detail h3 {
+    font-family:var(--font-display);
+    font-size:12px; color:var(--accent2);
+    margin:28px 0 12px;
+    letter-spacing:0.14em; font-weight:700;
+    padding-bottom:8px;
+    border-bottom:1px solid rgba(212,175,55,0.18);
+    display:flex; align-items:center;
+    position:sticky; top:0;
+    background:rgba(15,17,22,0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index:5;
+    padding-top:4px;
+  }
+  #detail h3::before {
+    content:''; display:inline-block;
+    width:18px; height:1px; background:var(--gold);
+    margin-right:10px;
+  }
+
+  #detail .narr p {
+    font-size:13px; line-height:1.8; margin:0 0 14px;
+    color:var(--ink); letter-spacing:0.005em;
+  }
+  /* Drop cap on first narration paragraph (editorial touch) */
+  #detail .narr > p:first-of-type::first-letter {
+    font-family:var(--font-display); font-weight:900;
+    font-size:42px; line-height:1; float:left;
+    padding:4px 8px 0 0;
+    color:var(--accent); margin-top:2px;
+  }
+  #detail .narr .nt {
+    font-family:var(--font-display); font-weight:700;
+    color:var(--ink-bright); margin:14px 0 6px;
+    font-size:13.5px; letter-spacing:0.02em;
+  }
   /* provenance markers */
   #detail .prov-llm {
     color:#999; font-size:10px; opacity:0.7; margin-left:4px;
@@ -3529,18 +3608,18 @@ function renderMiniMap(site) {
   </div>`;
 }
 
-// === Stats count-up animation ===
+// === Stats count-up animation (with journalistic comma formatting) ===
+const _numFmt = new Intl.NumberFormat('ja-JP');
 function animateCountUp(id, target, duration = 1500) {
   const el = document.getElementById(id);
-  if (!el || target <= 0) { if (el) el.textContent = target; return; }
+  if (!el || target <= 0) { if (el) el.textContent = _numFmt.format(target); return; }
   const start = performance.now();
   function step(now) {
     const t = Math.min(1, (now - start) / duration);
-    // Easing: easeOutCubic
     const e = 1 - Math.pow(1 - t, 3);
-    el.textContent = Math.floor(e * target);
+    el.textContent = _numFmt.format(Math.floor(e * target));
     if (t < 1) requestAnimationFrame(step);
-    else el.textContent = target;
+    else el.textContent = _numFmt.format(target);
   }
   requestAnimationFrame(step);
 }
@@ -3724,12 +3803,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // === Era chapter banner (during chronological tour) ===
 const ERA_BANNERS = {
-  '戦後闇市':  { sub: '1945-1955', desc: '闇市文化と戦後組織化の起点' },
-  '高度成長':  { sub: '1956-1991', desc: '全国組織化と地場連合体の形成' },
-  '平成抗争':  { sub: '1992-2005', desc: '暴対法施行と組織間抗争の激化' },
-  '頂上作戦':  { sub: '2006-2024', desc: '組織トップへの首謀者責任認定の追求' },
-  '解体後':    { sub: '2019-現在', desc: '指定暴力団規模の縮小とトクリュウ型犯罪の拡大' },
+  '戦後闇市':  { sub: '1945-1955', desc: '闇市文化と戦後組織化の起点',     cls: 'era-postwar' },
+  '高度成長':  { sub: '1956-1991', desc: '全国組織化と地場連合体の形成', cls: 'era-growth' },
+  '平成抗争':  { sub: '1992-2005', desc: '暴対法施行と組織間抗争の激化', cls: 'era-heisei' },
+  '頂上作戦':  { sub: '2006-2024', desc: '組織トップへの首謀者責任認定の追求', cls: 'era-apex' },
+  '解体後':    { sub: '2019-現在', desc: '指定暴力団規模の縮小とトクリュウ型犯罪の拡大', cls: 'era-dismantled' },
 };
+function applyEraTint(eraCls) {
+  // Remove all era classes
+  document.body.classList.remove('era-postwar','era-growth','era-heisei','era-apex','era-dismantled');
+  if (eraCls) document.body.classList.add(eraCls);
+}
 let eraBannerTimer = null;
 function showEraBanner(era, dur = 2500) {
   const el = document.getElementById('era-banner');
@@ -4335,6 +4419,8 @@ function tourHide() {
   tour.steps = []; tour.idx = 0; tour.paused = false;
   tourCtrls.classList.remove('show');
   document.body.classList.remove('tour-active');
+  // Clear era tint
+  applyEraTint(null);
   // Hide tour subtitle + progress
   const subEl = document.getElementById('tour-subtitle');
   if (subEl) subEl.classList.remove('show');
@@ -4362,6 +4448,9 @@ function tourGoTo(idx) {
     if (currentEra && currentEra !== tour.lastEra) {
       tour.lastEra = currentEra;
       showEraBanner(currentEra, 2200);
+      // Apply era color tint to map
+      const meta = ERA_BANNERS[currentEra];
+      if (meta && meta.cls) applyEraTint(meta.cls);
     }
   }
   if (step.banner) showBanner(step.banner, 3000);
