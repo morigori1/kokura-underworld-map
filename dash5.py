@@ -962,6 +962,191 @@ HTML_TEMPLATE = r"""<!doctype html>
     fill:var(--accent2); font-size:8.5px; font-weight:700;
   }
 
+  /* ===== Tour progress bar (top of screen during tour) ===== */
+  #tour-progress {
+    position:fixed; top:0; left:0; right:0; height:3px;
+    background:rgba(0,0,0,0.4); z-index:1900;
+    display:none;
+  }
+  body.tour-active #tour-progress { display:block; }
+  #tour-progress .bar {
+    height:100%; background:linear-gradient(90deg, var(--accent), var(--accent2));
+    width:0%; transition:width 0.6s var(--ease-elegant);
+    box-shadow:0 0 12px rgba(212,175,55,0.6);
+  }
+
+  /* ===== Tour subtitle (movie-style lower-third) ===== */
+  #tour-subtitle {
+    position:fixed; left:0; right:0; bottom:30%; z-index:1750;
+    pointer-events:none; text-align:center;
+    display:none;
+  }
+  body.tour-active #tour-subtitle { display:block; }
+  #tour-subtitle .inner {
+    display:inline-block; max-width:80%;
+    background:linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.85) 100%);
+    padding:14px 24px; border-radius:4px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+  }
+  #tour-subtitle.show .inner { opacity:1; transform:translateY(0); }
+  #tour-subtitle .label {
+    color:var(--accent2); font-size:10px; letter-spacing:0.3em;
+    font-weight:700; text-transform:uppercase; margin-bottom:4px;
+  }
+  #tour-subtitle .title {
+    color:#fff; font-family:var(--font-display);
+    font-size:24px; font-weight:700; letter-spacing:0.04em;
+    text-shadow:0 2px 12px rgba(0,0,0,0.8);
+  }
+  #tour-subtitle .desc {
+    color:var(--ink-dim); font-size:11px; margin-top:6px;
+    letter-spacing:0.04em;
+  }
+  @media (max-width: 720px) {
+    #tour-subtitle { bottom:50%; }
+    #tour-subtitle .title { font-size:18px; }
+  }
+
+  /* ===== Marching ants on connection lines ===== */
+  @keyframes marching-ants {
+    to { stroke-dashoffset: -26; }
+  }
+  .leaflet-pane path.leaflet-interactive {
+    animation: marching-ants 1.2s linear infinite;
+  }
+
+  /* ===== Marker bounce-in (on initial load) ===== */
+  @keyframes marker-bounce-in {
+    0%   { opacity:0; transform: translateY(-30px) scale(0.4); }
+    60%  { opacity:1; transform: translateY(4px) scale(1.1); }
+    80%  { transform: translateY(-2px) scale(0.95); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  .pin-bouncing {
+    animation: marker-bounce-in 0.6s var(--ease-elegant) both;
+  }
+
+  /* ===== Image lightbox ===== */
+  #lightbox {
+    position:fixed; inset:0; z-index:2100;
+    background:rgba(0,0,0,0.92);
+    display:none; align-items:center; justify-content:center;
+    cursor:zoom-out;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  #lightbox.show { display:flex; animation: lightbox-in 0.3s var(--ease-out); }
+  @keyframes lightbox-in {
+    from { opacity:0; }
+    to   { opacity:1; }
+  }
+  #lightbox img {
+    max-width:92vw; max-height:88vh;
+    box-shadow:0 20px 60px rgba(0,0,0,0.8);
+    border:1px solid var(--glass-border);
+    border-radius:4px;
+  }
+  #lightbox .close {
+    position:absolute; top:20px; right:30px;
+    color:#fff; font-size:32px; cursor:pointer;
+    width:48px; height:48px; display:flex;
+    align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.5); border-radius:50%;
+    transition: background 0.2s;
+  }
+  #lightbox .close:hover { background:rgba(196,58,55,0.7); }
+  #lightbox .cap {
+    position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
+    color:var(--ink); font-size:13px; max-width:80%;
+    text-align:center; background:rgba(0,0,0,0.5);
+    padding:8px 18px; border-radius:3px;
+  }
+  /* Images in detail panel get zoom cursor */
+  #detail .image img { cursor: zoom-in; transition: opacity 0.2s; }
+  #detail .image img:hover { opacity: 0.85; }
+
+  /* Ken Burns slow pan on detail images */
+  @keyframes ken-burns {
+    0%   { transform: scale(1) translate(0, 0); }
+    50%  { transform: scale(1.08) translate(-1.5%, -1%); }
+    100% { transform: scale(1.04) translate(1%, 1%); }
+  }
+  #detail .image img {
+    animation: ken-burns 20s ease-in-out infinite alternate;
+    transform-origin: center;
+  }
+
+  /* ===== Testimony pull-quote ===== */
+  #detail .testimony-pq {
+    margin:14px 0 18px; padding:18px 22px;
+    background:linear-gradient(135deg, rgba(212,175,55,0.05), rgba(196,58,55,0.05));
+    border-left:3px solid var(--gold);
+    border-radius:4px;
+    position:relative;
+  }
+  #detail .testimony-pq::before {
+    content:'"';
+    position:absolute; top:-12px; left:8px;
+    font-family:var(--font-display);
+    font-size:64px; color:var(--gold);
+    opacity:0.4; line-height:1;
+  }
+  #detail .testimony-pq .pq-quote {
+    font-family:var(--font-display); font-style:italic;
+    font-size:14px; line-height:1.85;
+    color:var(--ink-bright);
+    padding-left:24px;
+  }
+  #detail .testimony-pq .pq-attr {
+    font-size:11px; color:var(--ink-dim);
+    margin-top:8px; padding-left:24px;
+    letter-spacing:0.04em;
+  }
+  #detail .testimony-pq .pq-attr b { color:var(--accent2); }
+
+  /* ===== Mini-map inset (detail panel) ===== */
+  #detail .mini-map {
+    width:100%; height:120px; border-radius:6px;
+    border:1px solid var(--glass-border);
+    margin:10px 0; background:#0a0d12;
+    overflow:hidden; position:relative;
+  }
+  #detail .mini-map-svg {
+    width:100%; height:100%;
+  }
+  #detail .mini-map-dot {
+    fill:var(--accent);
+    filter:drop-shadow(0 0 6px var(--accent));
+  }
+  #detail .mini-map-label {
+    position:absolute; bottom:6px; left:8px;
+    color:var(--ink-dim); font-size:10px;
+    letter-spacing:0.06em; text-transform:uppercase;
+    pointer-events:none;
+  }
+
+  /* ===== Marker hover ring preview ===== */
+  .marker-hover-label {
+    position:absolute; z-index:1200;
+    background:rgba(15,17,22,0.92);
+    backdrop-filter: blur(12px);
+    border:1px solid var(--glass-border);
+    border-radius:6px; padding:6px 10px;
+    color:var(--ink-bright); font-size:12px;
+    font-weight:600; white-space:nowrap;
+    pointer-events:none;
+    box-shadow:0 8px 24px rgba(0,0,0,0.6);
+    transform:translate(-50%, -100%) translateY(-10px);
+    opacity:0; transition:opacity 0.18s, transform 0.18s var(--ease-out);
+  }
+  .marker-hover-label.show {
+    opacity:1; transform:translate(-50%, -100%) translateY(-14px);
+  }
+
   /* ===== Big year ticker (auto-play / scrub overlay) ===== */
   #year-ticker {
     position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
@@ -1811,6 +1996,23 @@ HTML_TEMPLATE = r"""<!doctype html>
 <!-- Era chapter banner (during chronological tour) -->
 <div id="era-banner"></div>
 
+<!-- Tour progress bar (top) -->
+<div id="tour-progress"><div class="bar"></div></div>
+
+<!-- Tour subtitle (movie-style lower-third) -->
+<div id="tour-subtitle"><div class="inner">
+  <div class="label">NOW VIEWING</div>
+  <div class="title"></div>
+  <div class="desc"></div>
+</div></div>
+
+<!-- Image lightbox -->
+<div id="lightbox" onclick="closeLightbox(event)">
+  <div class="close" onclick="closeLightbox(event)">✕</div>
+  <img id="lightbox-img" src="" alt="">
+  <div class="cap" id="lightbox-cap"></div>
+</div>
+
 <div id="side">
   <button class="close-side" type="button" onclick="document.getElementById('side').classList.remove('open')" aria-label="閉じる">✕</button>
   <div id="toc">
@@ -2551,7 +2753,7 @@ function isSpecialSite(s) {
   }
   return false;
 }
-function makeMarker(s) {
+function makeMarker(s, opts = {}) {
   const size = getSiteSize(s);
   const opacity = getSiteOpacity(s);
   const color = colorFor(s);
@@ -2559,17 +2761,46 @@ function makeMarker(s) {
   const maxSev = (s.events || []).reduce((a,e) => Math.max(a, e.severity || 1), 1);
   const pulseClass = (maxSev >= 5 && s.kind === 'attack_site') ? ' pin-pulse' : '';
   const haloClass = isSpecialSite(s) ? ' pin-halo-special' : '';
-  const html = `<div class="pin${pulseClass}${haloClass}" style="width:${size}px; height:${size}px; background:${color}; opacity:${opacity};"></div>`;
+  const bounceClass = opts.bounce ? ' pin-bouncing' : '';
+  const delay = opts.delay ? ` animation-delay:${opts.delay}ms;` : '';
+  const html = `<div class="pin${pulseClass}${haloClass}${bounceClass}" style="width:${size}px; height:${size}px; background:${color}; opacity:${opacity};${delay}"></div>`;
   const icon = L.divIcon({ className: '', html, iconSize: [size, size] });
   return L.marker([s.lat, s.lon], { icon, title: s.label });
 }
 
+// Initial markers — bounce in sequentially for visual delight
+let __markerIdx = 0;
 for (const s of DATA.sites) {
   if (s.lat == null || s.lon == null) continue;
-  const m = makeMarker(s);
+  // Stagger bounce by 8ms per marker (max ~3s total for 350 markers)
+  const delay = Math.min(__markerIdx * 8, 2800);
+  __markerIdx++;
+  const m = makeMarker(s, { bounce: true, delay });
   m.addTo(map);
   m.bindPopup(renderSitePopup(s), { maxWidth: 360 });
+  // Hover ring preview (custom label)
+  m.on('mouseover', e => showHoverLabel(s, e));
+  m.on('mouseout', hideHoverLabel);
   siteIndex[s.slug] = { site: s, marker: m, poiMarkers: [] };
+}
+
+// === Marker hover label ===
+let hoverLabelEl = null;
+function showHoverLabel(s, e) {
+  if (!hoverLabelEl) {
+    hoverLabelEl = document.createElement('div');
+    hoverLabelEl.className = 'marker-hover-label';
+    document.body.appendChild(hoverLabelEl);
+  }
+  hoverLabelEl.textContent = s.label;
+  const pt = map.latLngToContainerPoint([s.lat, s.lon]);
+  const rect = document.getElementById('map').getBoundingClientRect();
+  hoverLabelEl.style.left = (rect.left + pt.x) + 'px';
+  hoverLabelEl.style.top  = (rect.top + pt.y) + 'px';
+  hoverLabelEl.classList.add('show');
+}
+function hideHoverLabel() {
+  if (hoverLabelEl) hoverLabelEl.classList.remove('show');
 }
 
 function refreshMarkers() {
@@ -2633,13 +2864,19 @@ function openDetail(slug) {
   if (s.images && s.images.length) {
     for (const im of s.images) {
       html.push(`<div class="image">`);
-      html.push(`  <img src="${escapeAttr(im.path)}" alt="${escapeAttr(im.caption || '')}">`);
+      html.push(`  <img src="${escapeAttr(im.path)}" alt="${escapeAttr(im.caption || '')}" ` +
+                `onclick="openLightbox('${escapeAttr(im.path)}', '${escapeAttr(im.caption || '')}')">`);
       html.push(`  <div class="cap">${escapeHtml(im.caption || '')} <br>` +
                 `<small>${escapeHtml(im.credit || '')}` +
                 (im.src ? ` · <a href="${escapeAttr(im.src)}" target="_blank" rel="noopener">Commons</a>` : '') +
                 `</small></div>`);
       html.push(`</div>`);
     }
+  }
+
+  // Mini-map inset showing site at country/world scale
+  if (s.lat != null && s.lon != null) {
+    html.push(renderMiniMap(s));
   }
 
   if (s.notes) {
@@ -2726,14 +2963,17 @@ function openDetail(slug) {
   if (s.testimony && s.testimony.length) {
     html.push(`<h3>判決抜粋 / 証言</h3>`);
     for (const t of s.testimony) {
-      html.push(`<div class="quote">`);
-      html.push(`  ${escapeHtml(t.quote || '')}`);
-      html.push(`  <div class="sp">— ${escapeHtml(t.speaker_label || t.role || '')}` +
-                (t.year ? ` (${escapeHtml(t.year)})` : '') + `</div>`);
+      // Pull-quote style: large serif italic with quotation glyph
+      html.push(`<div class="testimony-pq">`);
+      html.push(`  <div class="pq-quote">${escapeHtml(t.quote || '')}</div>`);
+      const attr = (t.speaker_label || t.role || '') +
+                   (t.year ? ` <span style="color:var(--ink-faint);">(${escapeHtml(t.year)})</span>` : '');
+      html.push(`  <div class="pq-attr"><b>—</b> ${attr}`);
       if (t.source_outlet) {
-        html.push(`<div class="src">出典: ${escapeHtml(t.source_outlet)}` +
-                  (t.source_title ? ` — ${escapeHtml(t.source_title)}` : '') + `</div>`);
+        html.push(` <span style="color:var(--ink-faint);">/ ${escapeHtml(t.source_outlet)}` +
+                  (t.source_title ? ` — ${escapeHtml(t.source_title)}` : '') + `</span>`);
       }
+      html.push(`  </div>`);
       html.push(`</div>`);
     }
   }
@@ -3232,6 +3472,109 @@ function renderDistBar() {
 }
 
 // ===== Radar chart for site (9 axes) =====
+// === Lightbox ===
+function openLightbox(src, caption) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  const cap = document.getElementById('lightbox-cap');
+  if (!lb || !img) return;
+  img.src = src;
+  if (cap) cap.textContent = caption || '';
+  lb.classList.add('show');
+}
+function closeLightbox(e) {
+  if (e && e.target && e.target.tagName === 'IMG') return;  // ignore clicks on img itself
+  const lb = document.getElementById('lightbox');
+  if (lb) lb.classList.remove('show');
+}
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const lb = document.getElementById('lightbox');
+    if (lb) lb.classList.remove('show');
+  }
+});
+
+// === Mini-map inset (Japan / world scale showing site location) ===
+function renderMiniMap(site) {
+  // Determine if site is in Japan or elsewhere
+  const lat = site.lat, lon = site.lon;
+  const inJapan = lat > 24 && lat < 46 && lon > 122 && lon < 146;
+  // Simple SVG: Japan outline (approx) + dot, or world dot
+  // For Japan: project to SVG coords (lon 128-146 → x 0-100, lat 30-46 → y 100-0)
+  let x, y, label;
+  if (inJapan) {
+    // Japan bounding box: lon [128, 146], lat [30, 46]
+    x = ((lon - 128) / 18) * 280 + 10;
+    y = ((46 - lat) / 16) * 100 + 5;
+    label = '日本国内';
+  } else {
+    // World: lon [-180, 180] → x [0, 300]; lat [-60, 80] → y [0, 110]
+    x = ((lon + 180) / 360) * 280 + 10;
+    y = ((80 - lat) / 140) * 100 + 5;
+    label = '海外拠点';
+  }
+  // Japan outline (very simplified rectangle); world: bare points
+  const outline = inJapan
+    ? '<rect x="20" y="20" width="260" height="80" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="40"/>'
+    : '<rect x="10" y="10" width="280" height="100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>';
+  return `<div class="mini-map">
+    <svg class="mini-map-svg" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet">
+      ${outline}
+      <circle class="mini-map-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"/>
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10" fill="none" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
+    </svg>
+    <div class="mini-map-label">${label} · ${lat.toFixed(2)}, ${lon.toFixed(2)}</div>
+  </div>`;
+}
+
+// === Stats count-up animation ===
+function animateCountUp(id, target, duration = 1500) {
+  const el = document.getElementById(id);
+  if (!el || target <= 0) { if (el) el.textContent = target; return; }
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - start) / duration);
+    // Easing: easeOutCubic
+    const e = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.floor(e * target);
+    if (t < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+}
+// Hook into stats display — animate on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const c = DATA.counts || {};
+    animateCountUp('stat-sites', c.sites || 0);
+    animateCountUp('stat-events', c.events || 0);
+    animateCountUp('stat-lore', c.lore || 0);
+    animateCountUp('stat-persons', c.persons || 0);
+    animateCountUp('stat-chron', c.chronicle || 0);
+    animateCountUp('stat-src', c.source_kinds || 0);
+    animateCountUp('stat-src-total', c.sources_total || 0);
+  }, 300);
+});
+
+// === Mouse-following parallax (subtle) ===
+let parallaxFrame = null;
+document.addEventListener('mousemove', e => {
+  if (parallaxFrame) return;
+  parallaxFrame = requestAnimationFrame(() => {
+    parallaxFrame = null;
+    // Move map tiles by tiny amount based on cursor position
+    const w = window.innerWidth, h = window.innerHeight;
+    const px = (e.clientX / w - 0.5) * 4;  // -2..+2 px
+    const py = (e.clientY / h - 0.5) * 4;
+    const tilePane = document.querySelector('.leaflet-tile-pane');
+    if (tilePane) {
+      tilePane.style.transform = `translate3d(${-px}px, ${-py}px, 0)`;
+    }
+  });
+});
+
 function renderTagRadar(site) {
   const axes = ['economy', 'judicial', 'radius', 'violence_eco',
                 'decade', 'weapon', 'media_exposure', 'org_size', 'designation_status'];
@@ -3992,6 +4335,11 @@ function tourHide() {
   tour.steps = []; tour.idx = 0; tour.paused = false;
   tourCtrls.classList.remove('show');
   document.body.classList.remove('tour-active');
+  // Hide tour subtitle + progress
+  const subEl = document.getElementById('tour-subtitle');
+  if (subEl) subEl.classList.remove('show');
+  const bar = document.querySelector('#tour-progress .bar');
+  if (bar) bar.style.width = '0%';
 }
 function updateTourUI() {
   if (tour.steps.length === 0) return;
@@ -4016,6 +4364,23 @@ function tourGoTo(idx) {
     }
   }
   if (step.banner) showBanner(step.banner, 3000);
+  // Update tour progress bar
+  const progress = ((idx + 1) / tour.steps.length) * 100;
+  const progressBar = document.querySelector('#tour-progress .bar');
+  if (progressBar) progressBar.style.width = progress + '%';
+  // Update tour subtitle (movie-style)
+  const subEl = document.getElementById('tour-subtitle');
+  if (subEl && rec) {
+    const titleEl = subEl.querySelector('.title');
+    const descEl = subEl.querySelector('.desc');
+    if (titleEl) titleEl.textContent = rec.site.label;
+    if (descEl) descEl.textContent = rec.site.notes ? rec.site.notes.slice(0, 80) + '...' : '';
+    subEl.classList.remove('show');
+    setTimeout(() => subEl.classList.add('show'), 50);
+    // Auto-hide after 4s so it doesn't block too long
+    clearTimeout(window._subHide);
+    window._subHide = setTimeout(() => subEl.classList.remove('show'), 4000);
+  }
   if (rec) {
     map.flyTo([rec.site.lat, rec.site.lon], 17, { duration: 1.6 });
     setTimeout(() => openDetail(step.slug), 1700);
