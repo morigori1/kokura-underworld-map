@@ -1708,10 +1708,12 @@ HTML_TEMPLATE = r"""<!doctype html>
     <span class="i18n-en">🗺️ How to use</span>
   </h2>
   <div class="sub">
-    <span class="i18n-ja">227 拠点・382 事件・35 人物・28 ツアーを横断する OSINT 可視化。<br>
-      マーカー → 詳細パネル / ツアー → ガイド再生 / 検索 → 全層横断</span>
-    <span class="i18n-en">OSINT visualization across 227 sites · 382 events · 35 people · 28 tours.<br>
-      Markers → detail panel / Tours → guided playback / Search → all layers.<br>
+    <span class="i18n-ja">343 拠点・394 事件・491 解説段落・313 街のいま・28 ツアーを横断する OSINT 可視化。<br>
+      <b>9 タグ軸 + 国際接続線</b> = 13 通りの色分けモードで同じ地図が違う物語を語る。<br>
+      マーカー → 詳細パネル / ツアー → ガイド再生 + 章バナー / 検索 → 全層横断</span>
+    <span class="i18n-en">OSINT visualization across 343 sites · 394 events · 491 paragraphs · 313 "today" cards · 28 tours.<br>
+      <b>9 tag axes + intl links</b> = 13 color modes turn the same map into different stories.<br>
+      Markers → detail panel / Tours → guided playback + chapter banners / Search → all layers.<br>
       <i style="color:var(--ink-dim); font-size:11px;">Most data cards are in Japanese; use browser translate for individual cards.</i></span>
   </div>
 
@@ -1759,16 +1761,104 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="tx">
       <div class="platform">📱 FAB</div>
       <span class="i18n-ja"><b>絞り込み(🔍)</b><br>
-        色分けモード(種別 / 派閥 / 時代)・派閥フィルタ・出典種別フィルタ・
-        時代フィルタを一括設定するモーダル。</span>
+        派閥フィルタ・出典種別フィルタ・時代フィルタを一括設定するモーダル。
+        色分けモード切替は上部の色分けチップから(下記参照)。</span>
       <span class="i18n-en"><b>Filters (🔍)</b><br>
-        Color mode (kind / faction / era), faction filter, source-type filter,
-        era filter — all in one modal.</span>
+        Faction / source-type / era filters in one modal.
+        Color mode switching is via the chips at the top (see below).</span>
     </div>
   </div>
 
   <div class="row">
-    <div class="ico" style="background:#3498db;">☰</div>
+    <div class="ico" style="background:#9b59b6; color:#fff;">🎨</div>
+    <div class="tx">
+      <span class="i18n-ja"><b>13 色分けモード(画面上部のチップ)</b><br>
+        同じ地図を 13 通りに塗り直す。タップで切替:<br>
+        <b>基本3</b>: 種別 / 派閥 / 時代<br>
+        <b>タグ7</b>: 資金源(薬物/みかじめ料/IT詐欺ほか)・司法状態(公判中/確定済ほか)・
+        影響圏(町内→国際)・暴力 vs 経済・<b>年代</b>(戦前→2020s)・
+        <b>手口</b>(銃器/SNS闇バイト/マネロンほか)・<b>報道度</b>(国際多重→未報道)・
+        <b>組織規模</b>(大規模指定→トクリュウ流動)・<b>規制</b>(特定危険/OFAC TCO/トクリュウ概念)<br>
+        <b>関係軸</b>: 🔗 接続線(国際指示線・OFAC 制裁・組分裂・系譜)</span>
+      <span class="i18n-en"><b>13 color modes (chips at top)</b><br>
+        Recolor the same map 13 ways:<br>
+        <b>3 basic</b>: kind / faction / era<br>
+        <b>7 tag axes</b>: economy · judicial status · influence radius · violence-vs-economic ·
+        <b>decade</b> · <b>method</b> · <b>media exposure</b> · <b>org size</b> · <b>regulatory status</b><br>
+        <b>Relation</b>: 🔗 connection lines (intl directives, OFAC sanctions, org splits, lineage)</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:#1abc9c; color:#fff;">🔗</div>
+    <div class="tx">
+      <span class="i18n-ja"><b>国際接続線・スポットライト</b><br>
+        🔗 接続線 ON → 44 本の関係線(ルフィ事件指示 / OFAC 制裁 / 山口組分裂 / 系譜 ほか)が地図上に。<br>
+        <b>拠点クリックで「その拠点の関係線だけ強調」</b>(他は薄くフェード)。
+        例: Bicutan 入管をクリック → 8 本の指示線が広がる。<br>
+        線色で関係種別が分かる: 🟧 ルフィ指示 / 🔵 制裁 / 🟪 コンパウンド / 🔴 分裂 / 🟢 系譜 など</span>
+      <span class="i18n-en"><b>Intl connection lines + spotlight</b><br>
+        🔗 ON → 44 relation lines (Luffy directives / OFAC / org splits / lineage) appear.<br>
+        <b>Click a site to highlight only its links</b> (others fade). E.g. Bicutan → 8 directive lines.</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:#9b59b6; color:#fff;">⏯</div>
+    <div class="tx">
+      <span class="i18n-ja"><b>年代時間旅行(年代モード)</b><br>
+        色分けを「年代」に → スライダー出現 → <b>▶ 再生</b>で戦前→2020sを自動スクラブ。<br>
+        切替時に画面中央に巨大な「YYYY年代」が浮遊。
+        戦後 80 年の組織犯罪の地理的進化が時間軸でアニメ化。</span>
+      <span class="i18n-en"><b>Decade time-travel (decade mode)</b><br>
+        Switch to "年代" color mode → slider appears → <b>▶ play</b> auto-scrubs Prewar→2020s.
+        Big year ticker floats on screen. 80 years of organized-crime evolution animated.</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico">🎯</div>
+    <div class="tx">
+      <span class="i18n-ja"><b>9 軸タグレーダー(詳細パネル内)</b><br>
+        拠点をクリック → 詳細パネルに 9 軸の SVG レーダー。<br>
+        資金源・司法・影響圏・暴力経済・年代・手口・報道度・組織規模・規制 の
+        「タグ的指紋」が視覚化される。</span>
+      <span class="i18n-en"><b>9-axis tag radar (in detail panel)</b><br>
+        Each site shows a 9-axis SVG radar — its "tag fingerprint" across
+        economy / judicial / radius / violence-eco / decade / method / media / size / regulation.</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico">✨</div>
+    <div class="tx">
+      <span class="i18n-ja"><b>マーカーの 4 次元表示</b><br>
+        色 = 色分けモード / <b>サイズ</b> = 重要度・報道度(国際多重 +8px・未報道 -3px) /
+        <b>濃淡</b> = 年代(戦前 0.55 → 2020s 1.0)/
+        <b>脈動</b> = 重大事件(severity 5)。<br>
+        さらに <b>✨ ハロー</b>: 特定危険指定 / OFAC TCO / 大規模指定 / 国際多重報道 の重要拠点に脈動グロー。</span>
+      <span class="i18n-en"><b>Markers encode 4 dimensions</b><br>
+        Color = color mode / <b>size</b> = severity + media exposure /
+        <b>opacity</b> = decade fade / <b>pulse</b> = severity-5 attacks.<br>
+        <b>Halo glow</b> for specifically-dangerous / OFAC TCO / major orgs / intl-covered sites.</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:#16a085; color:#fff;">📊</div>
+    <div class="tx">
+      <span class="i18n-ja"><b>分布バー(色分けモード時)</b><br>
+        タグ系モード切替時に、上部に値分布のスタック横棒が表示。
+        「現在のモードで地図上を何が支配しているか」が一目で分かる。
+        ホバーで「ラベル: 件数 (%)」。</span>
+      <span class="i18n-en"><b>Distribution bar (tag modes)</b><br>
+        When in a tag-based color mode, a stacked horizontal bar shows the
+        distribution. Hover for "label: count (%)".</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:#3498db; color:#fff;">☰</div>
     <div class="tx">
       <div class="platform">📱 FAB</div>
       <span class="i18n-ja"><b>目次(☰)</b><br>
@@ -1822,12 +1912,14 @@ HTML_TEMPLATE = r"""<!doctype html>
   <div class="row">
     <div class="ico">🎬</div>
     <div class="tx">
-      <span class="i18n-ja"><b>ツアー中の操作</b><br>
-        画面上部に <b>⏮ / ⏸ / ⏭ / 1/N / ✕</b> のコントロールバーが出現。
-        一時停止して読み込み、好きなだけ滞在してから次へ。</span>
-      <span class="i18n-en"><b>Tour playback controls</b><br>
-        While a tour plays, a <b>⏮ / ⏸ / ⏭ / 1/N / ✕</b> bar appears at the top.
-        Pause to read in depth, stay as long as you like, then continue.</span>
+      <span class="i18n-ja"><b>ツアー中の操作 + 章バナー</b><br>
+        画面上部に <b>⏮ / ⏸ / ⏭ / 1/N / ✕</b> コントロールバー。一時停止可。<br>
+        時代切替で <b>全画面の章バナー</b>(戦後闇市 / 高度成長 / 平成抗争 / 頂上作戦 / 解体後)が浮上。
+        各時代の年代範囲と一行解説付き、映画の章タイトルのような演出。</span>
+      <span class="i18n-en"><b>Tour playback + chapter banners</b><br>
+        Top bar: <b>⏮ / ⏸ / ⏭ / 1/N / ✕</b>. Pause to read in depth.<br>
+        At each era transition, a <b>full-screen chapter banner</b> appears
+        (Postwar / High-growth / Heisei / Apex / Aftermath) with date range and tagline.</span>
     </div>
   </div>
 
@@ -1840,6 +1932,34 @@ HTML_TEMPLATE = r"""<!doctype html>
       <span class="i18n-en"><b>Lore cards (gold border)</b><br>
         Book-based gossip layer, visually distinct from court excerpts (blue) and
         official records. ★1–5 spice level marks salience.</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:#bdc3c7; color:#000;">⚠</div>
+    <div class="tx">
+      <span class="i18n-ja"><b>provenance マーカー(解説段落の末尾)</b><br>
+        各 narration の末尾に <b>⚠ AI</b>(LLM 生成・要検証)または
+        <b>✓</b>(人間執筆・検証済み)バッジが表示。
+        全 1,459 行のうち 1,457 行が LLM 生成のため、批判的に読んで下さい。
+        現地者の修正は GitHub Issues 歓迎。</span>
+      <span class="i18n-en"><b>Provenance markers (end of paragraphs)</b><br>
+        Each narration ends with <b>⚠ AI</b> (LLM-generated, needs verification)
+        or <b>✓</b> (human-verified). 1,457 / 1,459 entries are LLM-generated —
+        read critically. Local corrections welcome via GitHub Issues.</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="ico" style="background:#16a085; color:#fff;">📰</div>
+    <div class="tx">
+      <span class="i18n-ja"><b>地元メディア・行政(詳細パネル下方)</b><br>
+        各拠点に 2,500+ の関連リンク。<b>🌆 市町村</b>(市役所・区警察・地元 FM)→
+        <b>🏞 都道府県</b>(県紙・県警・暴追センター)→ <b>🌏 国際</b>(各国主要紙・大使館)
+        の階層で表示。</span>
+      <span class="i18n-en"><b>Local media + government (lower detail)</b><br>
+        2,500+ links per site. <b>🌆 city</b> (city hall, ward police, local FM) →
+        <b>🏞 prefecture</b> (regional paper, pref police) → <b>🌏 intl</b> (national press, embassy).</span>
     </div>
   </div>
 
