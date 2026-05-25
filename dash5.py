@@ -812,9 +812,79 @@ HTML_TEMPLATE = r"""<!doctype html>
   .pin {
     border-radius:50%; border:2px solid #fff;
     box-shadow:0 0 0 1px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.4);
+    transition: width 0.3s, height 0.3s, background 0.3s, opacity 0.3s;
+  }
+  .pin-pulse {
+    animation: pin-pulse 2s ease-in-out infinite;
+  }
+  @keyframes pin-pulse {
+    0%, 100% { box-shadow:0 0 0 1px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.4); }
+    50%      { box-shadow:0 0 0 3px rgba(217,83,79,0.4), 0 0 14px rgba(217,83,79,0.6); }
   }
   .poi-pin { width:6px; height:6px; border-radius:50%; background:#9aa6b2;
              border:1px solid rgba(0,0,0,0.5); }
+
+  /* ===== Tag distribution mini-bar (top of map) ===== */
+  #dist-bar {
+    position:absolute; top:120px; left:354px; right:12px; height:24px;
+    z-index:1090; display:flex; align-items:stretch;
+    background:rgba(13,15,18,0.6); border:1px solid var(--line);
+    border-radius:4px; overflow:hidden; padding:0;
+    font-size:9px; pointer-events:auto;
+    transition: opacity 0.3s;
+  }
+  #dist-bar.hidden { opacity:0; pointer-events:none; }
+  #dist-bar .seg {
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; padding:0 4px; min-width:14px;
+    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    cursor:default;
+  }
+  #dist-bar .seg:hover { filter:brightness(1.3); }
+  @media (max-width: 720px) {
+    #dist-bar { left:8px; right:8px; top:auto; bottom:170px; }
+  }
+
+  /* ===== Radar chart in detail panel ===== */
+  #detail .tag-radar {
+    width:200px; height:200px; margin:8px auto;
+  }
+  #detail .tag-radar circle, #detail .tag-radar polygon {
+    fill:rgba(217,83,79,0.18); stroke:var(--accent); stroke-width:1.5;
+  }
+  #detail .tag-radar .grid {
+    fill:none; stroke:rgba(255,255,255,0.08); stroke-width:1;
+  }
+  #detail .tag-radar .axis {
+    stroke:rgba(255,255,255,0.15); stroke-width:1;
+  }
+  #detail .tag-radar text {
+    fill:var(--ink-dim); font-size:9px; text-anchor:middle;
+  }
+  #detail .tag-radar .label-val {
+    fill:var(--accent2); font-size:8.5px; font-weight:700;
+  }
+
+  /* ===== Decade scrubbing slider ===== */
+  #decade-slider-wrap {
+    position:absolute; bottom:160px; left:354px; right:12px;
+    z-index:1090; display:none;
+    background:rgba(13,15,18,0.85); border:1px solid var(--line);
+    border-radius:4px; padding:8px 12px; font-size:11px;
+  }
+  #decade-slider-wrap.show { display:block; }
+  #decade-slider-wrap .lbl {
+    color:var(--accent2); font-weight:700; margin-right:8px;
+  }
+  #decade-slider {
+    width:100%; margin:4px 0;
+  }
+  #decade-slider-wrap .decade-display {
+    color:#fff; font-weight:700; font-size:13px;
+  }
+  @media (max-width: 720px) {
+    #decade-slider-wrap { left:8px; right:8px; bottom:180px; }
+  }
 
   /* ===== Splash ===== */
   #splash {
@@ -1495,6 +1565,17 @@ HTML_TEMPLATE = r"""<!doctype html>
   <span id="source-chips"></span>
 </div>
 
+<!-- Tag distribution mini-bar (active color mode) -->
+<div id="dist-bar" class="hidden"></div>
+
+<!-- Decade time-scrubbing slider -->
+<div id="decade-slider-wrap">
+  <span class="lbl">⏳ 年代スクラブ:</span>
+  <span class="decade-display" id="decade-display">全期間</span>
+  <input type="range" id="decade-slider" min="0" max="10" step="1" value="10">
+  <button id="decade-reset" type="button" style="background:var(--accent); color:#fff; border:none; padding:2px 8px; border-radius:3px; font-size:10px; cursor:pointer;">リセット</button>
+</div>
+
 <div id="side">
   <button class="close-side" type="button" onclick="document.getElementById('side').classList.remove('open')" aria-label="閉じる">✕</button>
   <div id="toc">
@@ -2070,13 +2151,46 @@ function pinSize(severity) {
   return 11;
 }
 
+// Visual richness helpers
+const MEDIA_SIZE_BOOST = {
+  '国際多重報道': 8, '全国多重報道': 6, '全国紙複数': 4,
+  '全国紙単発': 2, '地方紙のみ': 0, '書籍のみ': -2,
+  '学術論文のみ': -2, '専門誌のみ': -2, '公的記録のみ': 0, '未報道': -3,
+};
+function getTagValue(s, axis) {
+  if (!s.tags) return null;
+  for (const t of s.tags) if (t.axis === axis) return t.value;
+  return null;
+}
+function getSiteSize(s) {
+  const maxSev = (s.events || []).reduce((a,e) => Math.max(a, e.severity || 1), 1);
+  let size = pinSize(maxSev);
+  const me = getTagValue(s, 'media_exposure');
+  if (me && MEDIA_SIZE_BOOST[me] !== undefined) size += MEDIA_SIZE_BOOST[me];
+  return Math.max(8, Math.min(28, size));
+}
+function getSiteOpacity(s) {
+  // Older decades fade slightly so newer events stand out
+  const dec = getTagValue(s, 'decade');
+  if (!dec) return 1.0;
+  const fadeMap = {
+    '戦前': 0.55, '1940s': 0.6, '1950s': 0.65, '1960s': 0.7,
+    '1970s': 0.75, '1980s': 0.8, '1990s': 0.85,
+    '2000s': 0.9, '2010s': 0.95, '2020s': 1.0,
+  };
+  return fadeMap[dec] || 1.0;
+}
+
 // ===== Plot site markers =====
 const siteIndex = {};
 function makeMarker(s) {
-  const maxSev = (s.events || []).reduce((a,e) => Math.max(a, e.severity || 1), 1);
-  const size = pinSize(maxSev);
+  const size = getSiteSize(s);
+  const opacity = getSiteOpacity(s);
   const color = colorFor(s);
-  const html = `<div class="pin" style="width:${size}px; height:${size}px; background:${color};"></div>`;
+  // Special: trigger pulse for severity-5 attack sites
+  const maxSev = (s.events || []).reduce((a,e) => Math.max(a, e.severity || 1), 1);
+  const pulseClass = (maxSev >= 5 && s.kind === 'attack_site') ? ' pin-pulse' : '';
+  const html = `<div class="pin${pulseClass}" style="width:${size}px; height:${size}px; background:${color}; opacity:${opacity};"></div>`;
   const icon = L.divIcon({ className: '', html, iconSize: [size, size] });
   return L.marker([s.lat, s.lon], { icon, title: s.label });
 }
@@ -2172,6 +2286,12 @@ function openDetail(slug) {
     html.push(`  <input class="slider" type="range" min="0" max="${s.imagery.length - 1}" value="0" id="wb-slider">`);
     html.push(`  <div class="era" id="wb-era"></div>`);
     html.push(`</div>`);
+  }
+
+  // Tag radar chart — visual fingerprint of the site's 9 axes
+  if (s.tags && s.tags.length) {
+    html.push(`<h3>🎯 タグプロファイル(9 軸)</h3>`);
+    html.push(renderTagRadar(s));
   }
 
   if (s.narration && s.narration.length) {
@@ -2700,6 +2820,144 @@ function applyAllFilters() {
   }
 }
 
+// ===== Tag distribution mini-bar (top of map) =====
+function renderDistBar() {
+  const bar = document.getElementById('dist-bar');
+  // Only show for tag-based color modes
+  if (!TAG_BY_AXIS[colorMode]) {
+    bar.classList.add('hidden');
+    return;
+  }
+  bar.classList.remove('hidden');
+  // Count current axis values across visible sites
+  const counts = {};
+  let total = 0;
+  for (const s of DATA.sites) {
+    if (!s.tags) continue;
+    for (const t of s.tags) {
+      if (t.axis === colorMode) {
+        counts[t.value] = (counts[t.value] || 0) + 1;
+        total++;
+        break;  // primary value only
+      }
+    }
+  }
+  // Sort by canonical ord
+  const tagsForAxis = (DATA.tag_dict || [])
+    .filter(t => t.axis === colorMode)
+    .sort((a, b) => a.ord - b.ord);
+  const parts = [];
+  for (const t of tagsForAxis) {
+    const c = counts[t.value] || 0;
+    if (c === 0) continue;
+    const pct = (c / total) * 100;
+    parts.push(
+      `<div class="seg" style="flex-basis:${pct}%; background:${t.color}" ` +
+      `title="${escapeAttr(t.label_ja || t.value)}: ${c} (${pct.toFixed(0)}%)">` +
+      `${c}</div>`
+    );
+  }
+  bar.innerHTML = parts.join('');
+}
+
+// ===== Radar chart for site (9 axes) =====
+function renderTagRadar(site) {
+  const axes = ['economy', 'judicial', 'radius', 'violence_eco',
+                'decade', 'weapon', 'media_exposure', 'org_size', 'designation_status'];
+  const axisLabels = {
+    economy: '資金源', judicial: '司法', radius: '影響圏', violence_eco: '暴力経済',
+    decade: '年代', weapon: '手口', media_exposure: '報道度',
+    org_size: '組織規模', designation_status: '規制',
+  };
+  // For each axis, count tag values for this site (presence = 1)
+  // Use ord as the magnitude (smaller ord = "higher tier")
+  const values = axes.map(axis => {
+    const tag = (site.tags || []).find(t => t.axis === axis);
+    if (!tag) return 0;
+    const td = (DATA.tag_dict || []).find(t => t.axis === axis && t.value === tag.value);
+    if (!td) return 0.3;
+    // ord 999 = generic = low score. Smaller ord = more specific = higher score.
+    // Normalize: ord 10 → 1.0, ord 999 → 0.1
+    const allOrds = (DATA.tag_dict || []).filter(t => t.axis === axis).map(t => t.ord);
+    const maxOrd = Math.min(900, Math.max(...allOrds));
+    const score = 1.0 - (Math.min(td.ord, maxOrd) / maxOrd) * 0.7;
+    return Math.max(0.1, score);
+  });
+  const cx = 100, cy = 100, R = 70;
+  const angleStep = (2 * Math.PI) / axes.length;
+  // Grid circles
+  const gridCircles = [0.25, 0.5, 0.75, 1.0]
+    .map(r => `<circle class="grid" cx="${cx}" cy="${cy}" r="${R*r}"/>`).join('');
+  // Axis lines
+  const axisLines = axes.map((_, i) => {
+    const a = -Math.PI/2 + i * angleStep;
+    const x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R;
+    return `<line class="axis" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
+  }).join('');
+  // Value polygon
+  const points = values.map((v, i) => {
+    const a = -Math.PI/2 + i * angleStep;
+    const x = cx + Math.cos(a) * R * v, y = cy + Math.sin(a) * R * v;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  // Axis labels
+  const labelTexts = axes.map((axis, i) => {
+    const a = -Math.PI/2 + i * angleStep;
+    const lx = cx + Math.cos(a) * (R + 14), ly = cy + Math.sin(a) * (R + 14);
+    const tag = (site.tags || []).find(t => t.axis === axis);
+    const valLabel = tag ? tag.value : '—';
+    return `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${escapeHtml(axisLabels[axis])}</text>
+            <text x="${lx.toFixed(1)}" y="${(ly+10).toFixed(1)}" class="label-val">${escapeHtml(valLabel)}</text>`;
+  }).join('');
+  return `<svg class="tag-radar" viewBox="0 0 200 200">
+    ${gridCircles}
+    ${axisLines}
+    <polygon points="${points}"/>
+    ${labelTexts}
+  </svg>`;
+}
+
+// ===== Decade scrubbing slider =====
+const DECADES = ['戦前','1940s','1950s','1960s','1970s','1980s','1990s','2000s','2010s','2020s'];
+let decadeFilter = null;  // null = 全期間, 0-9 = 戦前〜2020s 単体, -1 = 戦前 以前
+function applyDecadeFilter() {
+  const display = document.getElementById('decade-display');
+  if (decadeFilter == null) {
+    display.textContent = '全期間';
+    for (const slug in siteIndex) {
+      const rec = siteIndex[slug];
+      if (rec.marker._icon) rec.marker._icon.style.display = '';
+    }
+  } else {
+    const decadeLabel = DECADES[decadeFilter];
+    display.textContent = `〜 ${decadeLabel}`;
+    for (const slug in siteIndex) {
+      const rec = siteIndex[slug];
+      const tag = (rec.site.tags || []).find(t => t.axis === 'decade');
+      const myDec = tag ? tag.value : null;
+      const myIdx = myDec ? DECADES.indexOf(myDec) : -1;
+      const visible = myIdx >= 0 && myIdx <= decadeFilter;
+      if (rec.marker._icon) {
+        rec.marker._icon.style.display = visible ? '' : 'none';
+      }
+    }
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const slider = document.getElementById('decade-slider');
+  const reset = document.getElementById('decade-reset');
+  if (slider) slider.oninput = () => {
+    decadeFilter = parseInt(slider.value);
+    if (decadeFilter === 10) decadeFilter = null;
+    applyDecadeFilter();
+  };
+  if (reset) reset.onclick = () => {
+    decadeFilter = null;
+    if (slider) slider.value = 10;
+    applyDecadeFilter();
+  };
+});
+
 // ===== Site link rendering (国際接続線) =====
 const LINK_KIND_COLOR = {
   tokuryu_intl:         '#ff6b35',  // ルフィ事件指示
@@ -2755,6 +3013,10 @@ function setMode(m) {
     if (dt) dt.style.color = col;
   }
   renderLegend();
+  renderDistBar();
+  // Show decade slider when in decade mode
+  const ds = document.getElementById('decade-slider-wrap');
+  if (ds) ds.classList.toggle('show', m === 'decade');
 }
 document.querySelectorAll('#modebar .chip.mode').forEach(c => {
   c.onclick = () => setMode(c.dataset.mode);
